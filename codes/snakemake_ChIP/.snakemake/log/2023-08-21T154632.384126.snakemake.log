@@ -1,0 +1,99 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 40
+Rules claiming more threads will be scaled down.
+Conda environments: ignored
+Job stats:
+job            count    min threads    max threads
+-----------  -------  -------------  -------------
+all                1              1              1
+bamCoverage        2             10             10
+fastqc             2              5              5
+multiqc            1              1              1
+total              6              1             10
+
+Select jobs to execute...
+
+[Mon Aug 21 15:47:40 2023]
+rule bamCoverage:
+    input: results/mm10/dedup/CTCF_mES_chip.sorted.filtered.marked.bam, results/mm10/dedup/CTCF_mES_chip.sorted.filtered.marked.bam.bai
+    output: results/bamCoverage/mm10/CTCF_mES_chip.bw
+    log: logs/bamCoverage/mm10/CTCF_mES_chip.log
+    jobid: 19
+    reason: Missing output files: results/bamCoverage/mm10/CTCF_mES_chip.bw
+    wildcards: genome=mm10, sample=CTCF_mES_chip
+    threads: 10
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+
+[Mon Aug 21 15:47:40 2023]
+rule fastqc:
+    input: raw/CTCF_mES_input.fastq.gz
+    output: results/qc/fastqc/CTCF_mES_input.html, results/qc/fastqc/CTCF_mES_input_fastqc.zip
+    log: logs/fastqc/CTCF_mES_input.log
+    jobid: 2
+    reason: Missing output files: results/qc/fastqc/CTCF_mES_input_fastqc.zip, results/qc/fastqc/CTCF_mES_input.html
+    wildcards: sample=CTCF_mES_input
+    threads: 5
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+[Mon Aug 21 15:47:40 2023]
+rule bamCoverage:
+    input: results/mm10/dedup/CTCF_mES_input.sorted.filtered.marked.bam, results/mm10/dedup/CTCF_mES_input.sorted.filtered.marked.bam.bai
+    output: results/bamCoverage/mm10/CTCF_mES_input.bw
+    log: logs/bamCoverage/mm10/CTCF_mES_input.log
+    jobid: 20
+    reason: Missing output files: results/bamCoverage/mm10/CTCF_mES_input.bw
+    wildcards: genome=mm10, sample=CTCF_mES_input
+    threads: 10
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+
+[Mon Aug 21 15:47:40 2023]
+rule fastqc:
+    input: raw/CTCF_mES_chip.fastq.gz
+    output: results/qc/fastqc/CTCF_mES_chip.html, results/qc/fastqc/CTCF_mES_chip_fastqc.zip
+    log: logs/fastqc/CTCF_mES_chip.log
+    jobid: 1
+    reason: Missing output files: results/qc/fastqc/CTCF_mES_chip_fastqc.zip, results/qc/fastqc/CTCF_mES_chip.html
+    wildcards: sample=CTCF_mES_chip
+    threads: 5
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+[Mon Aug 21 15:47:40 2023]
+rule multiqc:
+    input: results/mm10/samtools_flagstat/CTCF_mES_chip.sorted.filtered.marked.flagstat, results/mm10/samtools_flagstat/CTCF_mES_input.sorted.filtered.marked.flagstat
+    output: results/qc/multiqc.html
+    log: logs/multiqc/multiqc.log
+    jobid: 14
+    reason: Missing output files: results/qc/multiqc.html
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+[Mon Aug 21 15:48:41 2023]
+Finished job 14.
+1 of 6 steps (17%) done
+[Mon Aug 21 15:50:46 2023]
+Finished job 1.
+2 of 6 steps (33%) done
+[Mon Aug 21 15:51:41 2023]
+Finished job 2.
+3 of 6 steps (50%) done
+[Mon Aug 21 15:51:59 2023]
+Finished job 19.
+4 of 6 steps (67%) done
+[Mon Aug 21 15:52:57 2023]
+Finished job 20.
+5 of 6 steps (83%) done
+Select jobs to execute...
+
+[Mon Aug 21 15:52:57 2023]
+localrule all:
+    input: results/qc/fastqc/CTCF_mES_chip.html, results/qc/fastqc/CTCF_mES_input.html, results/qc/fastqc/CTCF_mES_chip_fastqc.zip, results/qc/fastqc/CTCF_mES_input_fastqc.zip, results/mm10/dedup/CTCF_mES_chip.sorted.filtered.marked.bam.bai, results/mm10/dedup/CTCF_mES_input.sorted.filtered.marked.bam.bai, results/mm10/callpeak/CTCF_mES_peaks.xls, results/mm10/callpeak/CTCF_mES_peaks.narrowPeak, results/mm10/callpeak/CTCF_mES_summits.bed, results/qc/multiqc.html, results/mm10/samtools_stats/CTCF_mES_chip.txt, results/mm10/samtools_stats/CTCF_mES_input.txt, results/bamCoverage/mm10/CTCF_mES_chip.bw, results/bamCoverage/mm10/CTCF_mES_input.bw
+    jobid: 0
+    reason: Input files updated by another job: results/bamCoverage/mm10/CTCF_mES_chip.bw, results/qc/fastqc/CTCF_mES_chip_fastqc.zip, results/qc/multiqc.html, results/qc/fastqc/CTCF_mES_input.html, results/qc/fastqc/CTCF_mES_chip.html, results/bamCoverage/mm10/CTCF_mES_input.bw, results/qc/fastqc/CTCF_mES_input_fastqc.zip
+    resources: tmpdir=/var/tmp/pbs.340004.pbsserver
+
+[Mon Aug 21 15:52:57 2023]
+Finished job 0.
+6 of 6 steps (100%) done
+Complete log: .snakemake/log/2023-08-21T154632.384126.snakemake.log

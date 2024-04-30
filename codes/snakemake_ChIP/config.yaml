@@ -1,0 +1,17 @@
+genome:
+    mm10: "/store/EQUIPES/CHRODY/COMMON/_GENOME_SEQUENCE/mm10/WholeGenomeFasta/genome.fa"
+effectiveGenomeSize: ""
+readext: ""
+binSize: ""
+blacklist_file: "genome/mm10-blacklist.v2.bed"
+gene_file: ""
+input_number: 1
+spikein: False
+
+Rlibrary_dir: ""
+RknownGene: ""
+spikein_norm: ""
+norm: ""
+remove_dup: 
+contrast_number: 
+sample_number: 1

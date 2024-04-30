@@ -1,0 +1,40 @@
+from snakemake.utils import min_version
+
+min_version("6.4.0")
+
+configfile: "config.yaml"
+
+# The main entry point of workflow.
+# After configuring, running snakemake -n in a clone of this repository should successfully execute a dry-run of the workflow.
+
+
+input_fastq="raw/{sample}.fastq.gz"
+samples,= glob_wildcards(input_fastq)
+
+input_couple="raw/{couple}_chip.fastq.gz"
+couples,= glob_wildcards(input_couple)
+
+genomes = list(config["genome"])
+
+print(genomes)
+
+include: "rules/fastqc.smk"
+#include: "rules/bowtie2_build.smk"
+include: "rules/bowtie2.smk"
+include: "rules/samtools_sort.smk"
+include: "rules/filtering_unmapped.smk"
+include: "rules/mark_duplicates.smk"
+include: "rules/samtools_index.smk"
+include: "rules/callpeak.smk"
+include: "rules/samtools_flagstat.smk"
+include: "rules/samtools_stats.smk"
+include: "rules/multiqc.smk"
+include: "rules/bamCoverage.smk"
+
+rule all:
+    input:
+        expand(rules.fastqc.output, sample=samples),
+        expand(rules.samtools_index.output, sample=samples, genome=genomes),
+        expand(rules.callpeak.output, couple=couples, genome=genomes),
+        expand(rules.multiqc.output, sample=samples, genome=genomes),
+        expand(rules.samtools_stats.output, sample=samples, genome=genomes),
