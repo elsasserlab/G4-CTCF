@@ -1,0 +1,51 @@
+Migrating .snakemake folder to new format...
+Migration complete
+Building DAG of jobs...
+Provided cores: 4
+Rules claiming more threads will be scaled down.
+Conda environments: ignored
+Job stats:
+job                   count
+------------------  -------
+all                       1
+bowtie2                   2
+fastqc                    2
+filtering_unmapped        2
+mark_duplicates           2
+multiqc                   1
+samtools_flagstat         2
+samtools_index            2
+samtools_sort             2
+samtools_stats            2
+total                    18
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Tue May  7 14:02:14 2024]
+localrule bowtie2:
+    input: raw/CTCF_mES_chip_sampled.fastq.gz, index/mm10/mm10.1.bt2, index/mm10/mm10.2.bt2, index/mm10/mm10.3.bt2, index/mm10/mm10.4.bt2, index/mm10/mm10.rev.1.bt2, index/mm10/mm10.rev.2.bt2
+    output: results/mm10/mapped/CTCF_mES_chip_sampled.bam
+    log: logs/bowtie2/mm10/CTCF_mES_chip_sampled.log
+    jobid: 7
+    reason: Missing output files: results/mm10/mapped/CTCF_mES_chip_sampled.bam
+    wildcards: genome=mm10, sample=CTCF_mES_chip_sampled
+    threads: 4
+    resources: tmpdir=C:\Users\hetey\AppData\Local\Temp
+
+RuleException:
+CalledProcessError in file C:\Szabolcs\Karolinska\Data\Jing\HiC-G4s\utils\repo_test\G4-CTCF\codes\snakemake_ChIP\rules/bowtie2.smk, line 18:
+Command 'C:/Users/hetey/AppData/Local/R/cache/R/basilisk/112~1.1/0/envs/snakemake/python.exe "C:\Szabolcs\Karolinska\Data\Jing\HiC-G4s\utils\repo_test\G4-CTCF\codes\snakemake_ChIP\.snakemake\scripts\tmp9wrupvsx.wrapper.py"' returned non-zero exit status 1.
+[Tue May  7 14:02:15 2024]
+Error in rule bowtie2:
+    jobid: 7
+    input: raw/CTCF_mES_chip_sampled.fastq.gz, index/mm10/mm10.1.bt2, index/mm10/mm10.2.bt2, index/mm10/mm10.3.bt2, index/mm10/mm10.4.bt2, index/mm10/mm10.rev.1.bt2, index/mm10/mm10.rev.2.bt2
+    output: results/mm10/mapped/CTCF_mES_chip_sampled.bam
+    log: logs/bowtie2/mm10/CTCF_mES_chip_sampled.log (check log file(s) for error details)
+    conda-env: C:\Szabolcs\Karolinska\Data\Jing\HiC-G4s\utils\repo_test\G4-CTCF\codes\snakemake_ChIP\.snakemake\conda\997b7d09a7cb5d170e1128a509fdd57e_
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake\log\2024-05-07T140211.030360.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.
