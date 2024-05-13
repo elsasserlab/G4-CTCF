@@ -1,4 +1,2 @@
 # ignore all bowtie index file
 *.bt2
-# ignore ALL files in ANY directory named temp
-workflow/index/ 
