@@ -1,34 +1,35 @@
-bw files for now: https://filesender.renater.fr/?s=download&token=719c78b5-f66f-4a14-a136-05924840cd71
+# mESC CTCF - G4 study (article title is here)
 
-parameters used: 
+## Snakemake workflow for CTCF and G4 Cut&Tag/ChIP-Seq analysis
 
-computeMatrix
-binSize: 10
-bef: 2000
-blacklist: mm10-blacklist.v2.bed
+## Usage
 
-plotHeatmap
-colorMap: YlOrRd
+The workflow folder contains the Snakemake environment with the necessary config file and Snakefile for running the Snakemake rules (workflow/rules folder) of the analyses (without normalization). The environment.yaml file listing the necessary packages is recommended for setting up the conda environment (e.g. `conda env create -f environment.yaml` ) before running. The workflow/index/mm10 folder must contain the bowtie2 indexed genome (mm10.*.bt2 formats). Multiple genomes can be provided in the analysis if different fastas are found in the config.yaml file. workflow/raw must contain the fastq pairs. If there are input files, samples and inputs in the workflow/raw folder should be named as "{couple}_chip.fastq.gz" and "{couple}_input.fastq.gz", respectively. Test fastq files are provided in the workflow/raw folder. 
+
+Our ChIP-Seq workflows ran under the versions below: 
+
+    snakemake 7.26
+    fastqc 0.12.1
+    bowtie2 2.5.1
+    samtools 1.17
+    multiqc 1.14
+    picard 3.0.0
+    macs2 2.2.7.1
+
+Python >3.8 and conda (e.g. version 24.1.2) are recommended.
+
+## deepTools figures
+
+The codes folder consists of the deepTools bash scripts used for the deeptools related visualizations. 
+
+# Data
+
+Normalized bigwig files are temporarily stored [here](https://filesender.renater.fr/?s=download&token=719c78b5-f66f-4a14-a136-05924840cd71).
+
+# References
+
+[Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)
+
+[deepTools documentation](https://deeptools.readthedocs.io/en/develop/)
 
 
-For the ChIP analyses, use snakemake_ChIP
-
-Generic snakemake workflow for ChIP-seq analysis (no normalization)
-
-Dependencies:
-
-    snakemake (e.g. 7.26)
-    fastqc (e.g. 0.12.1)
-    bowtie2 (e.g. 2.5.1)
-    samtools (e.g. 1.17)
-    multiqc (e.g. 1.14)
-    picard (e.g. 3.0.0)
-    macs2 (e.g. 2.2.7.1)
-
-There's a config file for the genome name and fasta if bowtie2 index are not provided, as well as for deeptools bamCoverage parameters.
-
-Naming rules: Sample FASTQs should be put in the raw folder, gzipped. They should be named "raw/{sample].fastq.gz"
-
-If there are inputs, ChIP samples should be named "raw/{couple}_chip.fastq.gz". Input samples should be named "raw/{couple}_input.fastq.gz".
-
-Multiple genomes can be provided in the analysis if different fastas are found in the config.yaml file.
