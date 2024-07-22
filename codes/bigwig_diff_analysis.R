@@ -3,12 +3,10 @@ if (!require("pacman"))
 pacman::p_load("tidyverse",
                "data.table",
                "rtracklayer",
-               "eulerr",
                "ggrastr",
                "DESeq2",
                "ggpubr",
                "wigglescout",
-               "bedscout"
 )
 
 # disable scientific notation
