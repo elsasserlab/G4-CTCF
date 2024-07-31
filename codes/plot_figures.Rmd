@@ -1,3 +1,8 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
 
 ```{r}
 library("tidyverse")
@@ -9,9 +14,6 @@ library("ggpubr")
 library("wigglescout")
 library("eulerr")
 library("ggplot2")
-
-# disable scientific notation
-options(scipen=999)
 
 # export 
 result_folder = "../results/wigglescout/"
@@ -143,9 +145,12 @@ pds_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958385_GSM7116279_E14_PDS_CTCF
 pdc_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958383_GSM7116281_E14_PhenDC3_CTCF_Rep1_Mus_musculus_ChIP-Seq.CPMnorm.bw",
                 "../data/CutNTag_ChIP-Seq/bw/SRR23958382_GSM7116282_E14_PhenDC3_CTCF_Rep2_Mus_musculus_ChIP-Seq.CPMnorm.bw")
 
+G4_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/G4_CnT_NT_batch3_R1.unique.bw")
+
 cov.mocks <- bw_loci(mocks_bigwigs,peaks_bed,labels=c("mock_1","mock_2"))
 cov.pds <- bw_loci(pds_bigwigs,peaks_bed,labels=c("PDS_1","PDS_2"))
 cov.pdc <- bw_loci(pdc_bigwigs,peaks_bed,labels=c("PhenDC3_1","PhenDC3_2"))
+cov.G4 <- bw_loci(G4_bigwigs,peaks_bed,labels=c("G4_NT"))
 ```
 
 
@@ -154,6 +159,7 @@ results <- data.frame(
   as.data.frame(cov.mocks),
   as.data.frame(cov.pds)[6:7],
   as.data.frame(cov.pdc)[6:7],
+  as.data.frame(cov.G4)[6],
   raw.lfc.pds_1 = log2(cov.pds$PDS_1/cov.mocks$mock_1),
   raw.lfc.pds_2 = log2(cov.pds$PDS_2/cov.mocks$mock_2),
   raw.lfc.pdc_1 = log2(cov.pds$PDS_1/cov.mocks$mock_1),
@@ -164,8 +170,6 @@ results <- data.frame(
   mean.pds = rowMeans(as.data.frame(cov.pds)[6:7]),
   mean.pdc = rowMeans(as.data.frame(cov.pdc)[6:7])
   )
-
-
 
 cov.mocks$name <- NULL
 cov.pds$name <- NULL
@@ -191,32 +195,72 @@ results$deseq.sig.pdc <- lfc_pdc$pvalue < 0.05
 
 results$class <- gsub(" .+","",results$name)
 results$pro <- gsub(".+ ","",results$name)
+results$class <- factor(results$class,levels=c("CTCF_and_G4","CTCF_not_G4"))
 
 results$log2.mock <- log2(results$mean.mock)
 results$log2.pds <- log2(results$mean.pds)
 results$log2.pdc <- log2(results$mean.pdc)
+results$log2.G4 <- log2(results$G4_NT)
 
 results$deseq.sigup.pds <- results$deseq.sig.pds & results$deseq.lfc.pds > 0
 results$deseq.sigup.pdc <- results$deseq.sig.pdc & results$deseq.lfc.pdc > 0
 ```
 
 ```{r}
-mypal <-c("cornflowerblue","orange","red2","#505050")
-mypal2 <-c("cornflowerblue",,"cornflowerblue","orange",,"orange","red2",,"red2","#505050","#505050")
+table(results$name)
 ```
 
-```{r fig.width=4, fig.height=4}
-ggscatterhist(results,x ="deseq.mean.pds",y="deseq.lfc.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="pro",color="black",size=0.2))
-#plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
-```
-```{r fig.width=4, fig.height=4}
-ggscatterhist(results,x ="deseq.mean.pdc",y="deseq.lfc.pdc",size = 0.2, alpha=0.1,color="class",margin.params = list(fill="class",color="black",size=0.2))
+```{r}
+mypal <-c("cornflowerblue","orange","red2","darkgreen","#505050")
+mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red2","darkgreen","darkgreen","#505050","#505050")
 ```
 
-
-```{r fig.width=4, fig.height=4}
-ggboxplot(results,x ="class",y="raw.lfc.pds",fill="class",outlier.shape = "") + stat_compare_means()
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x ="class",y="mean.mock",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
 ```
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x ="pro",y="mean.mock",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
+```
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","mock_1","mock_2","PDS_1","PDS_2","PhenDC3_1","PhenDC3_2")))
+ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal ) + coord_cartesian(ylim=c(0,10))
+```
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","mock_1","mock_2","PDS_1","PDS_2","PhenDC3_1","PhenDC3_2")))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
+```
+```{r fig.width=3, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds","raw.lfc.pdc")))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-3,3))
+```
+
+```{r}
+compare_means(raw.lfc.pds ~ class,data = results)
+```
+
+```{r}
+compare_means(raw.lfc.pdc ~ class,data = results,)
+```
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds_1","raw.lfc.pds_2","raw.lfc.pdc_1","raw.lfc.pdc_2")))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4))
+```
+```{r fig.width=4, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds","raw.lfc.pdc")))
+ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal) + coord_cartesian(ylim=c(-3,3))
+```
+
+```{r fig.width=3, fig.height=3}
+ggdensity(results,x="raw.lfc.pds",color="class", fill="class",palette=mypal) + geom_vline(xintercept = 0, linetype ="dotted")
+```
+
+```{r fig.width=3, fig.height=3}
+ggdensity(results,x="raw.lfc.pdc",color="class", fill="class",palette=mypal) + geom_vline(xintercept = 0, linetype ="dotted")
+```
+
 
 ```{r fig.width=4, fig.height=4}
 ggscatterhist(results,x ="log2.mock",y="log2.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="class",color="black",size=0.2))
@@ -282,32 +326,17 @@ results$psize[results$deseq.sigup.pds] <- 0.5
 
 ggscatter(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",palette=c("#505050","#505050","red2","blue"))
 ```
-```{r fig.width=4, fig.height=4}
-ggscatterhist(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",margin.params = list(fill="sig.by.class.pds",color="black",size=0.2),palette=c("#505050","#505050","red2","blue"))
-```
-
-
-```{r fig.width=4, fig.height=4}
-ggscatterhist(results],x ="",y="deseq.lfc.pdc",size = 0.2, alpha=0.1,color="class",margin.params = list(fill="class",color="black",size=0.2))
-```
-
-
-```{r fig.width=4, fig.height=4}
-ggboxplot(results,x ="class",y="raw.lfc.pdc",fill="class",outlier.shape = "") + coord_cartesian(ylim=c(-2,2))
-```
-
-```{r fig.width=4, fig.height=4}
-ggdensity(results,x="raw.lfc.pds",fill="name",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+```{r fig.width=6, fig.height=6}
+ggscatter(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="deseq.lfc.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",palette=c("#505050","#505050","red2","blue"))
 ```
 
 ```{r fig.width=5, fig.height=5}
-ggdensity(results,x="raw.lfc.pdc",fill="name",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+ggscatterhist(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.4, alpha="psize",color = "sig.by.class.pds",margin.params = list(fill="sig.by.class.pds",color="black",size=0.2),palette=c("#505050","#505050","red2","blue"))
 ```
 
 ```{r fig.width=4, fig.height=4}
-ggdensity(results,x="raw.lfc.pds",fill="class",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+ggscatter(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="class")
 ```
-
 ```{r fig.width=4, fig.height=4}
-ggdensity(results,x="raw.lfc.pdc",fill="class",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+ggscatterhist(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="deseq.sigup.pds",margin.params = list(fill="deseq.sigup.pds",color="black",size=0.2))
 ```
