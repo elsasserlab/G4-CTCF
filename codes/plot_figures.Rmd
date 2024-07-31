@@ -1,0 +1,313 @@
+
+```{r}
+library("tidyverse")
+library("data.table")
+library("rtracklayer")
+library("ggrastr")
+library("DESeq2")
+library("ggpubr")
+library("wigglescout")
+library("eulerr")
+library("ggplot2")
+
+# disable scientific notation
+options(scipen=999)
+
+# export 
+result_folder = "../results/wigglescout/"
+
+bws <- list.files("../data/CutNTag_ChIP-Seq/bw/",
+                  full.names = TRUE)
+
+```
+
+```{r}
+# diff signal function
+bw_granges_diff_analysis <- function(granges_c1,
+                                     granges_c2,
+                                     label_c1,
+                                     label_c2,
+                                     estimate_size_factors = FALSE,
+                                     as_granges = FALSE) {
+  # Bind first, get numbers after
+  names_values <- NULL
+  fields <- names(mcols(granges_c1))
+  
+  if ("name" %in% fields) {
+    names_values <- mcols(granges_c1)[["name"]]
+    granges_c1 <- granges_c1[, fields[fields != "name"]]
+  }
+  
+  fields <- names(mcols(granges_c2))
+  if ("name" %in% fields) {
+    granges_c2 <- granges_c2[, fields[fields != "name"]]
+  }
+  
+  cts_df <- cbind(data.frame(granges_c1), mcols(granges_c2))
+  
+  if (!is.null(names_values)) {
+    rownames(cts_df) <- names_values
+  }
+  
+  # Needs to drop non-complete cases and match rows
+  complete <- complete.cases(cts_df)
+  cts_df <- cts_df[complete, ]
+  
+  values_df <- cts_df[, 6:ncol(cts_df)] %>% dplyr::select(where(is.numeric))
+  cts <- get_nreads_columns(values_df)
+  
+  condition_labels <- c(rep(label_c1, length(mcols(granges_c1))), rep(label_c2, length(mcols(granges_c2))))
+  
+  
+  coldata <- data.frame(colnames(cts), condition = as.factor(condition_labels))
+  print(coldata)
+  
+  dds <- DESeq2::DESeqDataSetFromMatrix(
+    countData = cts,
+    colData = coldata,
+    design = ~ condition,
+    rowRanges = granges_c1[complete, ]
+  )
+  
+  
+  if (estimate_size_factors == TRUE) {
+    dds <- DESeq2::estimateSizeFactors(dds)
+  }
+  else {
+    # Since files are scaled, we do not want to estimate size factors
+    sizeFactors(dds) <- c(rep(1, ncol(cts)))
+  }
+  
+  dds <- DESeq2::estimateDispersions(dds)
+  dds <- DESeq2::nbinomWaldTest(dds)
+  
+  if (as_granges) {
+    result <- DESeq2::results(dds, format = "GRanges", alpha = 0.01)
+    if (!is.null(names_values)) {
+      result$name <- names_values[complete]
+    }
+    
+  }
+  else {
+    # result <- results(dds, format="DataFrame")
+    result <- dds
+  }
+  
+  result
+}
+
+get_nreads_columns <- function(df, length_factor = 100) {
+  # Convert mean coverages to round integer read numbers
+  cts <- as.matrix(df)
+  cts <- as.matrix(cts[complete.cases(cts), ])
+  cts <- round(cts * length_factor)
+  cts
+}
+```
+
+```{r}
+ctcf.and.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCF_G4.bed")
+ctcf.not.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCFonly.bed")
+ctcf.and.G4.npr <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_without_promoters.sorted-CTCF_G4.bed")
+ctcf.not.G4.npr <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_without_promoters.sorted-CTCFonly.bed")
+
+ctcf.and.G4.pro$class <- "CTCF_and_G4"
+ctcf.not.G4.pro$class <- "CTCF_not_G4"
+ctcf.and.G4.npr$class <- "CTCF_and_G4"
+ctcf.not.G4.npr$class <- "CTCF_not_G4"
+ctcf.and.G4.pro$pro <- "Pro"
+ctcf.not.G4.pro$pro <- "Pro"
+ctcf.and.G4.npr$pro <- "noPro"
+ctcf.not.G4.npr$pro <- "noPro"
+
+ctcf.and.G4 <- c(ctcf.and.G4.pro,ctcf.and.G4.npr)
+ctcf.not.G4 <- c(ctcf.not.G4.pro,ctcf.not.G4.npr)
+ctcf <- c(ctcf.and.G4,ctcf.not.G4)
+ctcf <- sortSeqlevels(ctcf)
+ctcf <- sort(ctcf)
+names(ctcf) <- paste0(ctcf$class," ",ctcf$pro)
+peaks_bed <- "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed"
+export.bed(ctcf, "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed")
+```
+
+```{r}
+# Wulfridge CTCF ChIP-Seq mocks
+mocks_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958387_GSM7116277_E14_Mock_CTCF_Rep1_Mus_musculus_ChIP-Seq.CPMnorm.bw",
+          "../data/CutNTag_ChIP-Seq/bw/SRR23958386_GSM7116278_E14_Mock_CTCF_Rep2_Mus_musculus_ChIP-Seq.CPMnorm.bw")
+
+# PDS
+# Wulfridge CTCF ChIP-Seq
+pds_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958385_GSM7116279_E14_PDS_CTCF_Rep1_Mus_musculus_ChIP-Seq.CPMnorm.bw",
+                "../data/CutNTag_ChIP-Seq/bw/SRR23958384_GSM7116280_E14_PDS_CTCF_Rep2_Mus_musculus_ChIP-Seq.CPMnorm.bw")
+
+pdc_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958383_GSM7116281_E14_PhenDC3_CTCF_Rep1_Mus_musculus_ChIP-Seq.CPMnorm.bw",
+                "../data/CutNTag_ChIP-Seq/bw/SRR23958382_GSM7116282_E14_PhenDC3_CTCF_Rep2_Mus_musculus_ChIP-Seq.CPMnorm.bw")
+
+cov.mocks <- bw_loci(mocks_bigwigs,peaks_bed,labels=c("mock_1","mock_2"))
+cov.pds <- bw_loci(pds_bigwigs,peaks_bed,labels=c("PDS_1","PDS_2"))
+cov.pdc <- bw_loci(pdc_bigwigs,peaks_bed,labels=c("PhenDC3_1","PhenDC3_2"))
+```
+
+
+```{r}
+results <- data.frame(
+  as.data.frame(cov.mocks),
+  as.data.frame(cov.pds)[6:7],
+  as.data.frame(cov.pdc)[6:7],
+  raw.lfc.pds_1 = log2(cov.pds$PDS_1/cov.mocks$mock_1),
+  raw.lfc.pds_2 = log2(cov.pds$PDS_2/cov.mocks$mock_2),
+  raw.lfc.pdc_1 = log2(cov.pds$PDS_1/cov.mocks$mock_1),
+  raw.lfc.pdc_2 = log2(cov.pdc$PhenDC3_2/cov.mocks$mock_2),
+  raw.lfc.pds = log2(rowMeans(as.data.frame(cov.pds)[6:7])/rowMeans(as.data.frame(cov.mocks)[6:7])),
+  raw.lfc.pdc = log2(rowMeans(as.data.frame(cov.pdc)[6:7])/rowMeans(as.data.frame(cov.mocks)[6:7])),
+  mean.mock = rowMeans(as.data.frame(cov.mocks)[6:7]),
+  mean.pds = rowMeans(as.data.frame(cov.pds)[6:7]),
+  mean.pdc = rowMeans(as.data.frame(cov.pdc)[6:7])
+  )
+
+
+
+cov.mocks$name <- NULL
+cov.pds$name <- NULL
+cov.pdc$name <- NULL
+
+de_pds <- bw_granges_diff_analysis(cov.mocks,cov.pds,"Mock","PDS")
+lfc_pds = DESeq2::lfcShrink(de_pds, coef = "condition_PDS_vs_Mock", type = "apeglm")
+
+de_pdc <- bw_granges_diff_analysis(cov.mocks,cov.pdc,"Mock","PhenDC3")
+lfc_pdc = DESeq2::lfcShrink(de_pdc, coef = "condition_PhenDC3_vs_Mock", type = "apeglm")
+
+results$deseq.lfc.pds <- results(de_pds)$log2FoldChange
+results$deseq.lfcs.pds <- lfc_pds$log2FoldChange
+results$deseq.padj.pds <- lfc_pds$padj
+results$deseq.mean.pds <- log2(lfc_pds$baseMean)
+results$deseq.sig.pds <- lfc_pds$pvalue < 0.05
+
+results$deseq.lfc.pdc <- results(de_pdc)$log2FoldChange
+results$deseq.lfcs.pdc <- lfc_pdc$log2FoldChange
+results$deseq.padj.pdc <- lfc_pdc$padj
+results$deseq.mean.pdc <- log2(lfc_pdc$baseMean)
+results$deseq.sig.pdc <- lfc_pdc$pvalue < 0.05
+
+results$class <- gsub(" .+","",results$name)
+results$pro <- gsub(".+ ","",results$name)
+
+results$log2.mock <- log2(results$mean.mock)
+results$log2.pds <- log2(results$mean.pds)
+results$log2.pdc <- log2(results$mean.pdc)
+
+results$deseq.sigup.pds <- results$deseq.sig.pds & results$deseq.lfc.pds > 0
+results$deseq.sigup.pdc <- results$deseq.sig.pdc & results$deseq.lfc.pdc > 0
+```
+
+```{r}
+mypal <-c("cornflowerblue","orange","red2","#505050")
+mypal2 <-c("cornflowerblue",,"cornflowerblue","orange",,"orange","red2",,"red2","#505050","#505050")
+```
+
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results,x ="deseq.mean.pds",y="deseq.lfc.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="pro",color="black",size=0.2))
+#plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results,x ="deseq.mean.pdc",y="deseq.lfc.pdc",size = 0.2, alpha=0.1,color="class",margin.params = list(fill="class",color="black",size=0.2))
+```
+
+
+```{r fig.width=4, fig.height=4}
+ggboxplot(results,x ="class",y="raw.lfc.pds",fill="class",outlier.shape = "") + stat_compare_means()
+```
+
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results,x ="log2.mock",y="log2.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="class",color="black",size=0.2))
+```
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results,x ="log2.mock",y="log2.pdc",size = 0.2, alpha=0.1,color="deseq.sig.pdc",margin.params = list(fill="class",color="black",size=0.2))
+```
+
+```{r}
+table(results$deseq.sig.pds & (results$deseq.lfc.pds > 0),results$pro)
+```
+
+```{r fig.width=3, fig.height=2.5}
+table(results$deseq.sig.pds & (results$deseq.lfc.pds > 0),results$class)
+mdf<-reshape2::melt(table(results$deseq.sig.pds & (results$deseq.lfc.pds > 0),results$class))
+ggplot(mdf,aes(Var1, Var2, fill= value)) + 
+  geom_tile(show.legend = F) + geom_text(aes(label=value)) +
+  scale_fill_gradient(low="white", high="orange") + theme_minimal()
+```
+
+```{r}
+vl <- list(sig=grep("TRUE",results$deseq.sigup.pds),CTCF_G4=grep("and",results$class),CTCFonly=grep("not",results$class))
+plot(euler(vl),quantities=T)
+```
+
+```{r fig.width=3, fig.height=2.5}
+table(results$deseq.sig.pdc & (results$deseq.lfc.pdc > 0),results$class)
+mdf<-reshape2::melt(table(results$deseq.sig.pdc & (results$deseq.lfc.pdc > 0),results$class))
+ggplot(mdf,aes(Var1, Var2, fill= value)) + 
+  geom_tile(show.legend = F) + geom_text(aes(label=value)) +
+  scale_fill_gradient(low="white", high="orange") + theme_minimal()
+```
+
+
+```{r}
+results$uid <- seq(1:nrow(results))
+vl <- list(sig=grep("TRUE",results$deseq.sigup.pdc),CTCF_G4=grep("and",results$class),CTCFonly=grep("not",results$class))
+plot(euler(vl),quantities=T)
+```
+
+```{r fig.width=3, fig.height=2.5}
+table(results$deseq.sigup.pds,results$deseq.sigup.pdc)
+mdf<-reshape2::melt(table(results$deseq.sigup.pds,results$deseq.sigup.pdc))
+ggplot(mdf,aes(Var1, Var2, fill= value)) + 
+  geom_tile(show.legend = F) + geom_text(aes(label=value)) +
+  scale_fill_gradient(low="white", high="orange") + theme_minimal()
+```
+
+```{r}
+vl <- list(sig_PDS=grep("TRUE",results$deseq.sigup.pds),sig_PDC=grep("TRUE",results$deseq.sigup.pdc),CTCF_G4=grep("and",results$class),CTCFonly=grep("not",results$class))
+plot(euler(vl),quantities=T)
+```
+
+```{r}
+results$uid <- seq(1:nrow(results))
+vl <- list(sig_PDS=grep("TRUE",results$deseq.sigup.pds),sig_PDC=grep("TRUE",results$deseq.sigup.pdc),CTCF_G4=grep("and",results$class))
+plot(euler(vl),quantities=T)
+```
+```{r fig.width=6, fig.height=6}
+results$sig.by.class.pds <- paste0(results$deseq.sigup.pds,"_",results$class)
+results$psize <- 0.01
+results$psize[results$deseq.sigup.pds] <- 0.5
+
+ggscatter(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",palette=c("#505050","#505050","red2","blue"))
+```
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",margin.params = list(fill="sig.by.class.pds",color="black",size=0.2),palette=c("#505050","#505050","red2","blue"))
+```
+
+
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results],x ="",y="deseq.lfc.pdc",size = 0.2, alpha=0.1,color="class",margin.params = list(fill="class",color="black",size=0.2))
+```
+
+
+```{r fig.width=4, fig.height=4}
+ggboxplot(results,x ="class",y="raw.lfc.pdc",fill="class",outlier.shape = "") + coord_cartesian(ylim=c(-2,2))
+```
+
+```{r fig.width=4, fig.height=4}
+ggdensity(results,x="raw.lfc.pds",fill="name",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+```
+
+```{r fig.width=5, fig.height=5}
+ggdensity(results,x="raw.lfc.pdc",fill="name",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+```
+
+```{r fig.width=4, fig.height=4}
+ggdensity(results,x="raw.lfc.pds",fill="class",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+```
+
+```{r fig.width=4, fig.height=4}
+ggdensity(results,x="raw.lfc.pdc",fill="class",outlier.shape = "") + coord_cartesian(xlim=c(-2,2))
+```

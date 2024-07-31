@@ -1,2 +1,3 @@
 # ignore all bowtie index file
 *.bt2
+/data
