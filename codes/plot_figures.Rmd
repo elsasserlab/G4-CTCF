@@ -207,7 +207,12 @@ results$deseq.sigup.pdc <- results$deseq.sig.pdc & results$deseq.lfc.pdc > 0
 ```
 
 ```{r}
+write.table(results,"foldchange_results.txt")
 table(results$name)
+```
+
+```{r}
+results <- read.table("foldchange_results.txt")
 ```
 
 ```{r}
@@ -300,7 +305,7 @@ results$uid <- seq(1:nrow(results))
 vl <- list(sig=grep("TRUE",results$deseq.sigup.pdc),CTCF_G4=grep("and",results$class),CTCFonly=grep("not",results$class))
 plot(euler(vl),quantities=T)
 ```
-
+ 
 ```{r fig.width=3, fig.height=2.5}
 table(results$deseq.sigup.pds,results$deseq.sigup.pdc)
 mdf<-reshape2::melt(table(results$deseq.sigup.pds,results$deseq.sigup.pdc))
@@ -338,5 +343,71 @@ ggscatterhist(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="
 ggscatter(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="class")
 ```
 ```{r fig.width=4, fig.height=4}
+ggscatter(results[results$pro=="Pro",],x ="log2.mock",y="G4_NT",size = 0.2, alpha=0.1,color="class",mean.point = T, mean.point.size = 4) + coord_cartesian(ylim=c(0,100))
+```
+```{r fig.width=4, fig.height=4}
+ggscatter(results,x ="log2.mock",y="G4_NT",size = 0.2, alpha=0.1,color="name",mean.point = T, mean.point.size = 4, palette = mypal) + coord_cartesian(ylim=c(0,50))
+```
+
+```{r fig.width=3, fig.height=3}
+results$G4.quantile <- cut_number(results$G4_NT, n = 5,labels=F)
+ggstripchart(results,x="G4.quantile", y="deseq.lfc.pds",color="red2",add=c("violin","mean_sd"),add.params=list(color="black",fill="cornflowerblue"),size=0.2, alpha=results$deseq.sig.pds/4, palette=mypal) + coord_cartesian(ylim=c(-3,3)) + geom_hline(yintercept = 0, linetype="dotted")
+```
+```{r}
+table(results$G4.quantile,results$deseq.sig.pds)
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="G4.quantile", y="deseq.lfc.pds",fill="cornflowerblue",add="mean_sd") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0, linetype="dotted")
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="G4.quantile", y="log2.G4",fill="cornflowerblue",add="mean_sd") + geom_hline(yintercept = 0, linetype="dotted")
+```
+
+```{r fig.width=4, fig.height=4}
 ggscatterhist(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="deseq.sigup.pds",margin.params = list(fill="deseq.sigup.pds",color="black",size=0.2))
+```
+
+
+```{r fig.width=3, fig.height=3}
+peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
+plot_bw_profile("../data/CutNTag_ChIP-Seq/bw/GSM6634325_E14_Mock_G4.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
+```
+```{r fig.width=3, fig.height=3}
+peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
+plot_bw_profile(G4_bigwigs,peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
+```
+
+```{r fig.width=3, fig.height=3}
+plot_bw_profile(mocks_bigwigs[1],peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
+```
+
+
+
+
+```{r fig.width=12, fig.height=3}
+p1 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[1]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,5,6)],upstream = 1500, downstream=1500)
+p2 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[2]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,5,6)],upstream = 1500, downstream=1500)
+p3 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[3]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,5,6)],upstream = 1500, downstream=1500)
+p4 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[4]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,5,6)],upstream = 1500, downstream=1500)
+
+ggarrange(p1,p2,p3,p4,ncol = 4,nrow = 1)
+```
+
+```{r fig.width=12, fig.height=3}
+p1 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[1]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p2 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[2]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p3 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[3]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p4 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[4]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+
+ggarrange(p1,p2,p3,p4,ncol = 4,nrow = 1)
+```
+### cen we learn something from the genes with top-most increase in CTCF?
+```{r}
+sigup.pds <- results[results$deseq.sigup.pds,]
+sigup.pdc <- results[results$deseq.sigup.pdc,]
+
+#export.bed(sigup.pds,"peaks_sigup_pds.bed")
+#export.bed(sigup.pds,"peaks_sigup_pds.bed")
 ```

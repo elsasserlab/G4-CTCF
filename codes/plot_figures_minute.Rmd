@@ -1,0 +1,224 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library("tidyverse")
+library("data.table")
+library("rtracklayer")
+library("ggrastr")
+library("DESeq2")
+library("ggpubr")
+library("wigglescout")
+library("eulerr")
+library("ggplot2")
+
+# export 
+result_folder = "../results/wigglescout/"
+
+bws <- list.files("../data/CutNTag_ChIP-Seq/bw/",
+                  full.names = TRUE)
+
+```
+
+```{r}
+# diff signal function
+bw_granges_diff_analysis <- function(granges_c1,
+                                     granges_c2,
+                                     label_c1,
+                                     label_c2,
+                                     estimate_size_factors = FALSE,
+                                     as_granges = FALSE) {
+  # Bind first, get numbers after
+  names_values <- NULL
+  fields <- names(mcols(granges_c1))
+  
+  if ("name" %in% fields) {
+    names_values <- mcols(granges_c1)[["name"]]
+    granges_c1 <- granges_c1[, fields[fields != "name"]]
+  }
+  
+  fields <- names(mcols(granges_c2))
+  if ("name" %in% fields) {
+    granges_c2 <- granges_c2[, fields[fields != "name"]]
+  }
+  
+  cts_df <- cbind(data.frame(granges_c1), mcols(granges_c2))
+  
+  if (!is.null(names_values)) {
+    rownames(cts_df) <- names_values
+  }
+  
+  # Needs to drop non-complete cases and match rows
+  complete <- complete.cases(cts_df)
+  cts_df <- cts_df[complete, ]
+  
+  values_df <- cts_df[, 6:ncol(cts_df)] %>% dplyr::select(where(is.numeric))
+  cts <- get_nreads_columns(values_df)
+  
+  condition_labels <- c(rep(label_c1, length(mcols(granges_c1))), rep(label_c2, length(mcols(granges_c2))))
+  
+  
+  coldata <- data.frame(colnames(cts), condition = as.factor(condition_labels))
+  print(coldata)
+  
+  dds <- DESeq2::DESeqDataSetFromMatrix(
+    countData = cts,
+    colData = coldata,
+    design = ~ condition,
+    rowRanges = granges_c1[complete, ]
+  )
+  
+  
+  if (estimate_size_factors == TRUE) {
+    dds <- DESeq2::estimateSizeFactors(dds)
+  }
+  else {
+    # Since files are scaled, we do not want to estimate size factors
+    sizeFactors(dds) <- c(rep(1, ncol(cts)))
+  }
+  
+  dds <- DESeq2::estimateDispersions(dds)
+  dds <- DESeq2::nbinomWaldTest(dds)
+  
+  if (as_granges) {
+    result <- DESeq2::results(dds, format = "GRanges", alpha = 0.01)
+    if (!is.null(names_values)) {
+      result$name <- names_values[complete]
+    }
+    
+  }
+  else {
+    # result <- results(dds, format="DataFrame")
+    result <- dds
+  }
+  
+  result
+}
+
+get_nreads_columns <- function(df, length_factor = 100) {
+  # Convert mean coverages to round integer read numbers
+  cts <- as.matrix(df)
+  cts <- as.matrix(cts[complete.cases(cts), ])
+  cts <- round(cts * length_factor)
+  cts
+}
+```
+
+```{r}
+ctcf.and.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCF_G4.bed")
+ctcf.not.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCFonly.bed")
+ctcf.and.G4.npr <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_without_promoters.sorted-CTCF_G4.bed")
+ctcf.not.G4.npr <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_without_promoters.sorted-CTCFonly.bed")
+
+ctcf.and.G4.pro$class <- "CTCF_and_G4"
+ctcf.not.G4.pro$class <- "CTCF_not_G4"
+ctcf.and.G4.npr$class <- "CTCF_and_G4"
+ctcf.not.G4.npr$class <- "CTCF_not_G4"
+ctcf.and.G4.pro$pro <- "Pro"
+ctcf.not.G4.pro$pro <- "Pro"
+ctcf.and.G4.npr$pro <- "noPro"
+ctcf.not.G4.npr$pro <- "noPro"
+
+ctcf.and.G4 <- c(ctcf.and.G4.pro,ctcf.and.G4.npr)
+ctcf.not.G4 <- c(ctcf.not.G4.pro,ctcf.not.G4.npr)
+ctcf <- c(ctcf.and.G4,ctcf.not.G4)
+ctcf <- sortSeqlevels(ctcf)
+ctcf <- sort(ctcf)
+names(ctcf) <- paste0(ctcf$class," ",ctcf$pro)
+peaks_bed <- "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed"
+export.bed(ctcf, peaks_bed)
+```
+
+```{r}
+# EpiFinder CTCF ChIP-Seq mocks
+CTCF_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/CTCF_E14_NT_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_PDS_6h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_PDS_24h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_PhenDC3_6h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_PhenDC3_24h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_TMPyP4_6h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_E14_TMPyP4_24h_pooled.mm10.scaled.bw","../data/CutNTag_ChIP-Seq/bw/CTCF_AID_IAA_pooled.mm10.scaled.bw")
+
+cov.CTCF <- bw_loci(CTCF_bigwigs,peaks_bed,labels=c("NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA"))
+```
+
+```{r}
+results <- data.frame(
+  as.data.frame(cov.CTCF)
+  )
+
+log2s <- log2(results[,6:13])
+log2fcs <- log2(results[,6:13] / results[,6])
+colnames(log2s) <- paste0("lg2",colnames(log2s))
+colnames(log2fcs) <- paste0("lfc",colnames(log2fcs))
+
+results<-cbind(results,log2s,log2fcs)
+
+results$class <- gsub(" .+","",results$name)
+results$pro <- gsub(".+ ","",results$name)
+results$class <- factor(results$class,levels=c("CTCF_and_G4","CTCF_not_G4"))
+```
+
+```{r}
+write.table(results,"EF_CTCF_results.txt")
+table(results$name)
+```
+
+```{r}
+mypal <-c("cornflowerblue","orange","red2","darkgreen","#505050")
+mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red2","darkgreen","darkgreen","#505050","#505050")
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x ="class",y="lg2NT",fill="class",palette=mypal,add="mean_sd")
+```
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x ="class",y="lfcPDS_6h",fill="class",palette=mypal,add="mean_sd")
+```
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x ="pro",y="lg2NT",fill="class",palette=mypal,add="mean_sd") 
+```
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA")))
+ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal ) + coord_cartesian(ylim=c(0,50))
+```
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","lg2NT","lg2PDS_6h","lg2PDS_24h","lg2PhenDC3_6h","lg2PhenDC3_24h","lg2TMPyP4_6h","lg2TMPyP4_24h","lg2IAA")))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") 
+```
+
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("class","lfcPDS_6h","lfcPDS_24h","lfcPhenDC3_6h","lfcPhenDC3_24h","lfcTMPyP4_6h","lfcTMPyP4_24h")))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept = 0, linetype = "dotted") + coord_cartesian(ylim=c(-5,5)) 
+```
+```{r fig.width=5, fig.height=3}
+ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal) + geom_hline(yintercept = 0, linetype = "dotted") + coord_cartesian(ylim=c(-5,5)) 
+```
+
+```{r fig.width=4, fig.height=4}
+ggscatterhist(results,x ="lg2NT",y="lg2PDS_6h",size = 0.2, alpha=0.1,color="class",margin.params = list(fill="class",color="black",size=0.2))
+```
+
+
+
+
+```{r fig.width=3, fig.height=3}
+plot_bw_profile(CTCF_bigwigs[1],peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
+```
+
+```{r fig.width=12, fig.height=3}
+p1 <- plot_bw_profile(CTCF_bigwigs,peak_cats[[1]],labels=c("NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA"),mode="center",show_error = T,verbose=F, remove_top=0.001,upstream = 1500, downstream=1500)
+p2 <- plot_bw_profile(CTCF_bigwigs,peak_cats[[2]],labels=c("NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA"),mode="center",show_error = T,verbose=F, remove_top=0.001,upstream = 1500, downstream=1500)
+p3 <- plot_bw_profile(CTCF_bigwigs,peak_cats[[3]],labels=c("NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA"),mode="center",show_error = T,verbose=F, remove_top=0.001,upstream = 1500, downstream=1500)
+p4 <- plot_bw_profile(CTCF_bigwigs,peak_cats[[4]],labels=c("NT","PDS_6h","PDS_24h","PhenDC3_6h","PhenDC3_24h","TMPyP4_6h","TMPyP4_24h","IAA"),mode="center",show_error = T,verbose=F, remove_top=0.001,upstream = 1500, downstream=1500)
+
+ggarrange(p1,p2,p3,p4,ncol = 4,nrow = 1)
+```
+
+```{r fig.width=12, fig.height=3}
+p1 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[1]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p2 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[2]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p3 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[3]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+p4 <- plot_bw_profile(c(mocks_bigwigs,pds_bigwigs),peak_cats[[4]],labels=c("mock1","mock2","trt1","rtr2"),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal2[c(9,10,3,4)],upstream = 1500, downstream=1500)
+
+ggarrange(p1,p2,p3,p4,ncol = 4,nrow = 1)
+```
