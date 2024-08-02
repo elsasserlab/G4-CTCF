@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 
@@ -195,6 +197,7 @@ results$deseq.sig.pdc <- lfc_pdc$pvalue < 0.05
 
 results$class <- gsub(" .+","",results$name)
 results$pro <- gsub(".+ ","",results$name)
+results$pro <- factor(results$pro, levels=c("Pro","noPro"))
 results$class <- factor(results$class,levels=c("CTCF_and_G4","CTCF_not_G4"))
 
 results$log2.mock <- log2(results$mean.mock)
@@ -213,32 +216,54 @@ table(results$name)
 
 ```{r}
 results <- read.table("foldchange_results.txt")
+results$class <- factor(results$class, levels=c("CTCF_and_G4","CTCF_not_G4"))
 ```
 
 ```{r}
 mypal <-c("cornflowerblue","orange","red2","darkgreen","#505050")
-mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red2","darkgreen","darkgreen","#505050","#505050")
+mypal <-c("#00619D","#A82A34","orange","seagreen","#505050")
+mypal2 <-c("#00619D","#7FB0CE","#A82A34","#D39499","orange","#FFD55A","seagreen","#7DBA9C","#505050")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x ="class",y="mean.mock",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
+p <- ggviolin(results,x ="class",y="mean.mock",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
+annotate_figure(p,fig.lab = "CTCF signal by class in mock condition, mean of two reps, median+iqr",fig.lab.size = 6)
+ggsave("Violin_CTCF_classes.pdf",last_plot())
 ```
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x ="pro",y="mean.mock",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
+p <- ggviolin(results,x ="pro",y="mean.mock",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
+annotate_figure(p,fig.lab = "CTCF signal by class in mock condition, mean of two reps, median+iqr",fig.lab.size = 6)
+ggsave("Violin_CTCF_classes_pro.pdf",last_plot())
 ```
 
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","mock_1","mock_2","PDS_1","PDS_2","PhenDC3_1","PhenDC3_2")))
 ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal ) + coord_cartesian(ylim=c(0,10))
+ggsave("Boxplot_CTCF_reps.pdf",last_plot())
 ```
 
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","mock_1","mock_2","PDS_1","PDS_2","PhenDC3_1","PhenDC3_2")))
-ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal,add="mean_sd") + coord_cartesian(ylim=c(0,10))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
+ggsave("Violin_CTCF_reps.pdf",last_plot())
 ```
 ```{r fig.width=3, fig.height=3}
-mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds","raw.lfc.pdc")))
-ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-3,3))
+mdf <- reshape2::melt(dplyr::select(results,c("class","deseq.lfc.pds","deseq.lfc.pdc")))
+p <- ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
+annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iqr",fig.lab.size = 6)
+ggsave("Violin_CTCF_lfc.pdf",last_plot())
+```
+```{r fig.width=3, fig.height=3}
+p <- ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal) + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
+annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iqr",fig.lab.size = 6)
+ggsave("Boxplot_CTCF_lfc.pdf",last_plot())
+```
+
+```{r fig.width=5, fig.height=3}
+mdf <- reshape2::melt(dplyr::select(results,c("pro","class","deseq.lfc.pds","deseq.lfc.pdc")))
+p <- ggviolin(mdf,x ="pro",y="value",fill="class",palette=mypal, add="median_iqr", facet.by="variable") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
+annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iqr",fig.lab.size = 6)
+ggsave("Violin_CTCF_lfc_pro.pdf",last_plot())
 ```
 
 ```{r}
@@ -252,10 +277,7 @@ compare_means(raw.lfc.pdc ~ class,data = results,)
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds_1","raw.lfc.pds_2","raw.lfc.pdc_1","raw.lfc.pdc_2")))
 ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4))
-```
-```{r fig.width=4, fig.height=3}
-mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds","raw.lfc.pdc")))
-ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal) + coord_cartesian(ylim=c(-3,3))
+ggsave("Violin_CTCF_lfc_individual_reps.pdf",last_plot())
 ```
 
 ```{r fig.width=3, fig.height=3}
@@ -268,10 +290,12 @@ ggdensity(results,x="raw.lfc.pdc",color="class", fill="class",palette=mypal) + g
 
 
 ```{r fig.width=4, fig.height=4}
-ggscatterhist(results,x ="log2.mock",y="log2.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="class",color="black",size=0.2))
+ggscatterhist(results,x ="log2.mock",y="log2.pds",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="class",color="black",size=0.2),palette=mypal[c(5,2)])
+ggsave("Scatter_CTCF_DESEq_PDSvsMock.pdf",last_plot())
 ```
 ```{r fig.width=4, fig.height=4}
-ggscatterhist(results,x ="log2.mock",y="log2.pdc",size = 0.2, alpha=0.1,color="deseq.sig.pdc",margin.params = list(fill="class",color="black",size=0.2))
+ggscatterhist(results,x ="log2.mock",y="log2.pdc",size = 0.2, alpha=0.1,color="deseq.sig.pds",margin.params = list(fill="class",color="black",size=0.2),palette=mypal[c(5,2)])
+ggsave("Scatter_CTCF_DESEq_PhenDC3vsMock.pdf",last_plot())
 ```
 
 ```{r}
@@ -327,9 +351,9 @@ plot(euler(vl),quantities=T)
 ```{r fig.width=6, fig.height=6}
 results$sig.by.class.pds <- paste0(results$deseq.sigup.pds,"_",results$class)
 results$psize <- 0.01
-results$psize[results$deseq.sigup.pds] <- 0.5
+results$psize[results$deseq.sigup.pds & results$class=="CTCF_and_G4"] <- 1
 
-ggscatter(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="log2.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",palette=c("#505050","#505050","red2","blue"))
+ggscatter(results,x ="log2.mock",y="log2.pds",size = 0.5, alpha=results$psize,color = "sig.by.class.pds",palette=c(mypal[5],mypal[5],mypal[5],mypal[2],mypal[1]))
 ```
 ```{r fig.width=6, fig.height=6}
 ggscatter(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="deseq.lfc.pds",size = 0.2, alpha="psize",color = "sig.by.class.pds",palette=c("#505050","#505050","red2","blue"))
@@ -340,40 +364,36 @@ ggscatterhist(results[!grepl("NA",results$sig.by.class.pds),],x ="log2.mock",y="
 ```
 
 ```{r fig.width=4, fig.height=4}
-ggscatter(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="class")
+ggscatter(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="deseq.sigup.pds")
 ```
-```{r fig.width=4, fig.height=4}
-ggscatter(results[results$pro=="Pro",],x ="log2.mock",y="G4_NT",size = 0.2, alpha=0.1,color="class",mean.point = T, mean.point.size = 4) + coord_cartesian(ylim=c(0,100))
-```
-```{r fig.width=4, fig.height=4}
-ggscatter(results,x ="log2.mock",y="G4_NT",size = 0.2, alpha=0.1,color="name",mean.point = T, mean.point.size = 4, palette = mypal) + coord_cartesian(ylim=c(0,50))
-```
+
 
 ```{r fig.width=3, fig.height=3}
 results$G4.quantile <- cut_number(results$G4_NT, n = 5,labels=F)
-ggstripchart(results,x="G4.quantile", y="deseq.lfc.pds",color="red2",add=c("violin","mean_sd"),add.params=list(color="black",fill="cornflowerblue"),size=0.2, alpha=results$deseq.sig.pds/4, palette=mypal) + coord_cartesian(ylim=c(-3,3)) + geom_hline(yintercept = 0, linetype="dotted")
+ggstripchart(results,x="G4.quantile", y="deseq.lfc.pds",color=mypal[2],add=c("violin","median_iqr"),add.params=list(color="black",fill=mypal[1]),size=0.2, alpha=results$deseq.sig.pds/4, palette=mypal) + coord_cartesian(ylim=c(-3,3)) + geom_hline(yintercept = 0, linetype="dotted")
+ggsave("Violin_CTCF_lfc_by_G4quantile_sig_highlighted.pdf")
 ```
 ```{r}
 table(results$G4.quantile,results$deseq.sig.pds)
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="G4.quantile", y="deseq.lfc.pds",fill="cornflowerblue",add="mean_sd") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0, linetype="dotted")
+ggviolin(results,x="G4.quantile", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0, linetype="dotted")
+ggsave("Violin_CTCF_lfc_by_G4quantile.pdf")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="G4.quantile", y="log2.G4",fill="cornflowerblue",add="mean_sd") + geom_hline(yintercept = 0, linetype="dotted")
+ggviolin(results,x="G4.quantile", y="log2.G4",fill=mypal2[5],add="mean_sd") + geom_hline(yintercept = 0, linetype="dotted")
+ggsave("Violin_G4_by_G4quantile.pdf")
 ```
 
-```{r fig.width=4, fig.height=4}
-ggscatterhist(results,x ="raw.lfc.pds",y="log2.G4",size = 0.2, alpha=0.1,color="deseq.sigup.pds",margin.params = list(fill="deseq.sigup.pds",color="black",size=0.2))
-```
 
 
 ```{r fig.width=3, fig.height=3}
 peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
 plot_bw_profile("../data/CutNTag_ChIP-Seq/bw/GSM6634325_E14_Mock_G4.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
 ```
+
 ```{r fig.width=3, fig.height=3}
 peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
 plot_bw_profile(G4_bigwigs,peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, remove_top=0.001, colors=mypal)
@@ -410,4 +430,97 @@ sigup.pdc <- results[results$deseq.sigup.pdc,]
 
 #export.bed(sigup.pds,"peaks_sigup_pds.bed")
 #export.bed(sigup.pds,"peaks_sigup_pds.bed")
+```
+
+
+```{r}
+gghistogram(results,"width", add="median", fill="class")
+```
+### Overlap analysis
+
+```{r}
+G4_bed <- import('../data/G4_CnT/G4_WT_peaks.narrowPeak')
+ATAC_bed <- import('../data/ATAC-seq/ATAC_seq_mESC_Martire_peaks.narrowPeak')
+pro_bed <- import('../data/regions/promoters_geneSymbol.mm10.bed')
+
+G4_bed <- bedscout::annotate_overlapping_features(G4_bed,pro_bed,name_field = "name")
+
+G4_bed$name <- "G4"
+G4_bed$name[!is.na(G4_bed$nearby_features)] <- "G4pro"
+G4_bed$name[grepl("pro",G4_bed$name)] <- "G4pro"
+```
+
+```{r}
+nearest_G4_1kb <- bedscout::annotate_nearby_features(ctcf,G4_bed,distance_cutoff = 1000,ignore.strand = T,name_field = "name")
+nearest_G4_2.5kb <- bedscout::annotate_nearby_features(ctcf,G4_bed,distance_cutoff = 2500,ignore.strand = T,name_field = "name")
+nearest_G4_5kb <- bedscout::annotate_nearby_features(ctcf,G4_bed,distance_cutoff = 5000,ignore.strand = T,name_field = "name")
+nearest_G4_10kb <- bedscout::annotate_nearby_features(ctcf,G4_bed,distance_cutoff = 10000,ignore.strand = T,name_field = "name")
+nearest_G4_50kb <- bedscout::annotate_nearby_features(ctcf,G4_bed,distance_cutoff = 50000,ignore.strand = T,name_field = "name")
+
+ctcf$nearest_G4 <- factor(">50kb", levels=c("<1kb","<2.5kb","<5kb","<10kb","<50kb",">50kb"))
+ctcf$nearest_G4[!is.na(nearest_G4_50kb$nearby_features)] <- "<50kb"
+ctcf$nearest_G4[!is.na(nearest_G4_10kb$nearby_features)] <- "<10kb"
+ctcf$nearest_G4[!is.na(nearest_G4_5kb$nearby_features)] <- "<5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_2.5kb$nearby_features)] <- "<2.5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_1kb$nearby_features)] <- "<1kb"
+
+ctcf$nearest_G4_type <- "none"
+ctcf$nearest_G4_type[!is.na(nearest_G4_50kb$nearby_features)] <- nearest_G4_50kb$nearby_features[!is.na(nearest_G4_50kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_10kb$nearby_features)] <- nearest_G4_10kb$nearby_features[!is.na(nearest_G4_10kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_5kb$nearby_features)] <- nearest_G4_5kb$nearby_features[!is.na(nearest_G4_5kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_2.5kb$nearby_features)] <- nearest_G4_2.5kb$nearby_features[!is.na(nearest_G4_2.5kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_1kb$nearby_features)] <- nearest_G4_1kb$nearby_features[!is.na(nearest_G4_1kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_overlap$nearby_features)] <- nearest_G4_overlap$nearby_features[!is.na(nearest_G4_overlap$nearby_features)]
+
+ctcf$nearest_G4_type[grep("pro",ctcf$nearest_G4_type)] <- "G4pro"
+
+results$nearest_G4 <- ctcf$nearest_G4
+results$nearest_G4_type <- ctcf$nearest_G4_type
+table(results$nearest_G4)
+table(results$nearest_G4_type)
+table(results$nearest_G4, results$nearest_G4_type)
+```
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + geom_hline(yintercept = 0, linetype="dotted")
+ggsave("Violin_CTCF_signal_by_G4distance.pdf")
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PDS_lfc_by_G4distance.pdf")
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results)
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PhenDC3_lfc_by_G4distance.pdf")
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results)
+```
+```{r fig.width=5, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PDS_lfc_by_G4distance_pro.pdf")
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4",])
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
+```
+
+```{r fig.width=5, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="mean_sd") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PhenDC3_lfc_by_G4distance_pro.pdf")
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4",])
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
 ```
