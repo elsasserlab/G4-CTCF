@@ -1,8 +1,6 @@
 ---
 title: "R Notebook"
-output:
-  html_document:
-    df_print: paged
+output: html_notebook
 ---
 
 
@@ -276,7 +274,7 @@ compare_means(raw.lfc.pdc ~ class,data = results,)
 
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds_1","raw.lfc.pds_2","raw.lfc.pdc_1","raw.lfc.pdc_2")))
-ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="mean_sd") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4))
 ggsave("Violin_CTCF_lfc_individual_reps.pdf",last_plot())
 ```
 
@@ -383,7 +381,7 @@ ggsave("Violin_CTCF_lfc_by_G4quantile.pdf")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="G4.quantile", y="log2.G4",fill=mypal2[5],add="mean_sd") + geom_hline(yintercept = 0, linetype="dotted")
+ggviolin(results,x="G4.quantile", y="log2.G4",fill=mypal2[5],add="median_iqr") + geom_hline(yintercept = 0, linetype="dotted")
 ggsave("Violin_G4_by_G4quantile.pdf")
 ```
 
@@ -470,7 +468,6 @@ ctcf$nearest_G4_type[!is.na(nearest_G4_10kb$nearby_features)] <- nearest_G4_10kb
 ctcf$nearest_G4_type[!is.na(nearest_G4_5kb$nearby_features)] <- nearest_G4_5kb$nearby_features[!is.na(nearest_G4_5kb$nearby_features)]
 ctcf$nearest_G4_type[!is.na(nearest_G4_2.5kb$nearby_features)] <- nearest_G4_2.5kb$nearby_features[!is.na(nearest_G4_2.5kb$nearby_features)]
 ctcf$nearest_G4_type[!is.na(nearest_G4_1kb$nearby_features)] <- nearest_G4_1kb$nearby_features[!is.na(nearest_G4_1kb$nearby_features)]
-ctcf$nearest_G4_type[!is.na(nearest_G4_overlap$nearby_features)] <- nearest_G4_overlap$nearby_features[!is.na(nearest_G4_overlap$nearby_features)]
 
 ctcf$nearest_G4_type[grep("pro",ctcf$nearest_G4_type)] <- "G4pro"
 
@@ -511,9 +508,8 @@ compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4",
 ```{r}
 compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
 ```
-
 ```{r fig.width=5, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="mean_sd") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
 ggsave("Violin_CTCF_PhenDC3_lfc_by_G4distance_pro.pdf")
 ```
 
