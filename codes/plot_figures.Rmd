@@ -520,3 +520,28 @@ compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4",
 ```{r}
 compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
 ```
+```{r fig.width=3, fig.height=3}
+peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
+plot_bw_profile("../data/regions/G4.mm10.plus.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
+```
+
+```{r fig.width=3, fig.height=3}
+peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
+plot_bw_profile("../data/regions/G4.mm10.minus.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
+```
+```{r fig.width=4, fig.height=4}
+peak_cats_mm9 <- bedscout::import_named_bed_into_list('../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.mm9lift.bed')
+plot_bw_profile("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9,labels=c(peak_cats_mm9[[1]][1,]$name,peak_cats_mm9[[2]][1,]$name,peak_cats_mm9[[3]][1,]$name,peak_cats_mm9[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
+```
+```{r fig.width=4, fig.height=4}
+peak_cats_mm9 <- bedscout::import_named_bed_into_list('../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_2_categories.mm9lift.bed')
+plot_bw_profile("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9,labels=c(peak_cats_mm9[[1]][1,]$name,peak_cats_mm9[[2]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal,bin_size = 200)
+ggsave("Profile_predicted_G4_motif.pdf")
+```
+
+```{r fig.width=6, fig.height=4}
+p1 <- plot_bw_heatmap("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9[[1]],mode="center",verbose=F,max_rows_allowed = 500, zmax=0.3,cmap="Greys") + ggtitle("CTCF-G4")
+p2 <- plot_bw_heatmap("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9[[2]],mode="center",verbose=F,max_rows_allowed = 500, zmax=0.3,cmap="Greys") + ggtitle("CTCF-only")
+ggarrange(p1,p2)
+ggsave("Heatmap_predicted_G4_motif.pdf")
+```
