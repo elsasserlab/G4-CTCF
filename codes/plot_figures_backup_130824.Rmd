@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 
@@ -21,12 +23,6 @@ result_folder = "../results/wigglescout/"
 bws <- list.files("../data/CutNTag_ChIP-Seq/bw/",
                   full.names = TRUE)
 
-```
-
-```{r}
-mypal <-c("cornflowerblue","orange","red2","darkgreen","#505050")
-mypal <-c("#00619D","#A82A34","orange","seagreen","#505050")
-mypal2 <-c("#00619D","#7FB0CE","#A82A34","#D39499","orange","#FFD55A","seagreen","#7DBA9C","#505050")
 ```
 
 ```{r}
@@ -113,8 +109,6 @@ get_nreads_columns <- function(df, length_factor = 100) {
 }
 ```
 
-
-
 ```{r}
 ctcf.and.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCF_G4.bed")
 ctcf.not.G4.pro <- import("../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories_with_promoters.sorted-CTCFonly.bed")
@@ -138,24 +132,6 @@ ctcf <- sort(ctcf)
 names(ctcf) <- paste0(ctcf$class," ",ctcf$pro)
 peaks_bed <- "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed"
 export.bed(ctcf, "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed")
-```
-
-```{r fig.width=3, fig.height=3}
-ctcf.raw <- import("../data/CTCF_ChIP-seq/CTCF_mES_peaks.narrowPeak")
-G4.raw <- import("../data/G4_CnT/G4_WT_peaks.narrowPeak")
-ctcf.raw$class <- "CTCF"
-G4.raw$class <- "G4"
-ctcf.raw$pro <- "NA"
-G4.raw$pro <- "NA"
-df <- rbind(as.data.frame(ctcf.raw)[c(1,2,3,4,5,12,13)], as.data.frame(G4.raw)[c(1,2,3,4,5,12,13)],as.data.frame(ctcf,row.names = NULL))
-ggdensity(df,x="width",y = "density",color = "class", fill="class", alpha=0.1, palette=mypal) + scale_x_continuous(limits = c(100,600))
-```
-
-```{r}
-min(width(G4.raw))
-min(width(ctcf.raw))
-median(width(G4.raw))
-median(width(ctcf.raw))
 ```
 
 ```{r}
@@ -243,13 +219,17 @@ results <- read.table("foldchange_results.txt")
 results$class <- factor(results$class, levels=c("CTCF_and_G4","CTCF_not_G4"))
 ```
 
+```{r}
+mypal <-c("cornflowerblue","orange","red2","darkgreen","#505050")
+mypal <-c("#00619D","#A82A34","orange","seagreen","#505050")
+mypal2 <-c("#00619D","#7FB0CE","#A82A34","#D39499","orange","#FFD55A","seagreen","#7DBA9C","#505050")
+```
 
 ```{r fig.width=3, fig.height=3}
 p <- ggviolin(results,x ="class",y="mean.mock",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
 annotate_figure(p,fig.lab = "CTCF signal by class in mock condition, mean of two reps, median+iqr",fig.lab.size = 6)
 ggsave("Violin_CTCF_classes.pdf",last_plot())
 ```
-
 ```{r fig.width=3, fig.height=3}
 p <- ggviolin(results,x ="pro",y="mean.mock",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
 annotate_figure(p,fig.lab = "CTCF signal by class in mock condition, mean of two reps, median+iqr",fig.lab.size = 6)
