@@ -280,19 +280,44 @@ annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iq
 ggsave("Boxplot_CTCF_lfc.pdf",last_plot())
 ```
 
-```{r fig.width=5, fig.height=3}
+```{r fig.width=5, fig.height=6}
 mdf <- reshape2::melt(dplyr::select(results,c("pro","class","deseq.lfc.pds","deseq.lfc.pdc")))
-p <- ggviolin(mdf,x ="pro",y="value",fill="class",palette=mypal, add="median_iqr", facet.by="variable") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
+mdf$pro <- factor(mdf$pro, levels=c("Pro","noPro"))
+mdf$x <- as.factor(paste0(mdf$class," ",mdf$variable))
+mdf$x <- factor(mdf$x, levels=levels(mdf$x)[c(2,1,4,3)])
+p <- ggviolin(mdf,x ="x",y="value",fill="class",palette=mypal, add="median_iqr", facet.by="pro") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2)) + theme(axis.text.x=element_text(angle=90,hjust=1))
 annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iqr",fig.lab.size = 6)
 ggsave("Violin_CTCF_lfc_pro.pdf",last_plot())
 ```
 
 ```{r}
-compare_means(raw.lfc.pds ~ class,data = results)
+med <- aggregate(deseq.lfc.pds ~ class,data = results, FUN="median",na.rm = T)
+med$deseq.fc.pds <- 2^med$deseq.lfc.pds
+med
 ```
 
 ```{r}
-compare_means(raw.lfc.pdc ~ class,data = results,)
+med <- aggregate(deseq.lfc.pds ~ name,data = results, FUN="median",na.rm = T)
+med$deseq.fc.pds <- 2^med$deseq.lfc.pds
+med
+```
+```{r}
+med <- aggregate(deseq.lfc.pds ~ class,data = results, FUN="median",na.rm = T)
+med$deseq.fc.pds <- 2^med$deseq.lfc.pds
+med
+```
+```{r}
+med <- aggregate(deseq.lfc.pdc ~ name,data = results, FUN="median",na.rm = T)
+med$deseq.fc.pdc <- 2^med$deseq.lfc.pdc
+med
+```
+
+```{r}
+compare_means(deseq.lfc.pds ~ class,data = results)
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ class,data = results)
 ```
 
 ```{r fig.width=5, fig.height=3}
@@ -457,7 +482,7 @@ sigup.pdc <- results[results$deseq.sigup.pdc,]
 ```{r}
 gghistogram(results,"width", add="median", fill="class")
 ```
-### Overlap analysis
+### Distance-based analysis
 
 ```{r}
 G4_bed <- import('../data/G4_CnT/G4_WT_peaks.narrowPeak')
