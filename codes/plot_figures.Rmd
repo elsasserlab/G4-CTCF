@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 
@@ -247,9 +249,10 @@ ggsave("Violin_CTCF_reps.pdf",last_plot())
 ```
 ```{r fig.width=3, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","deseq.lfc.pds","deseq.lfc.pdc")))
-p <- ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
+p <- ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4)) + stat_compare_means(aes(group = class), label.y = 3, size = 2)
+  
 annotate_figure(p,fig.lab = "DESEq foldchange mean treat vs mean mock, median+iqr",fig.lab.size = 6)
-ggsave("Violin_CTCF_lfc.pdf",last_plot())
+ggsave("Violin_CTCF_lfc.pdf",last_plot(), width = 5, height = 5)
 ```
 ```{r fig.width=3, fig.height=3}
 p <- ggboxplot(mdf,x ="variable",y="value",fill="class",palette=mypal) + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-2,2))
