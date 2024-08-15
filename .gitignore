@@ -2,3 +2,4 @@
 *.bt2
 /data
 codes/plot_figures_backup_240731.Rmd
+.DS_Store

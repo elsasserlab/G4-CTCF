@@ -137,7 +137,7 @@ ctcf <- sortSeqlevels(ctcf)
 ctcf <- sort(ctcf)
 names(ctcf) <- paste0(ctcf$class," ",ctcf$pro)
 peaks_bed <- "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed"
-export.bed(ctcf, "../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.bed")
+export.bed(ctcf, peaks_bed)
 ```
 
 ```{r fig.width=3, fig.height=3}
@@ -482,6 +482,7 @@ sigup.pdc <- results[results$deseq.sigup.pdc,]
 ```{r}
 gghistogram(results,"width", add="median", fill="class")
 ```
+
 ### Distance-based analysis
 
 ```{r}
@@ -568,28 +569,118 @@ compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4",
 ```{r}
 compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
 ```
-```{r fig.width=3, fig.height=3}
-peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
-plot_bw_profile("../data/regions/G4.mm10.plus.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
+### Distance-based analysis, this time with predicted G4 motifs, not experimental peaks
+
+```{r}
+G4pred_bed <- import('../data/predG4/mm10_canonical_G4_PQS-regex.bed')
+ATAC_bed <- import('../data/ATAC-seq/ATAC_seq_mESC_Martire_peaks.narrowPeak')
+pro_bed <- import('../data/regions/promoters_geneSymbol.mm10.bed')
+
+G4pred_bed <- bedscout::annotate_overlapping_features(G4pred_bed,pro_bed,name_field = "name")
+
+G4pred_bed$name <- "G4"
+G4pred_bed$name[!is.na(G4pred_bed$nearby_features)] <- "G4pro"
+G4pred_bed$name[grepl("pro",G4pred_bed$name)] <- "G4pro"
+
+table(G4pred_bed$name)
+```
+
+```{r}
+nearest_G4_1kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 1000,ignore.strand = T,name_field = "name")
+nearest_G4_2.5kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 2500,ignore.strand = T,name_field = "name")
+nearest_G4_5kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 5000,ignore.strand = T,name_field = "name")
+nearest_G4_10kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 10000,ignore.strand = T,name_field = "name")
+nearest_G4_50kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 50000,ignore.strand = T,name_field = "name")
+
+ctcf$nearest_G4 <- factor(">50kb", levels=c("<1kb","<2.5kb","<5kb","<10kb","<50kb",">50kb"))
+ctcf$nearest_G4[!is.na(nearest_G4_50kb$nearby_features)] <- "<50kb"
+ctcf$nearest_G4[!is.na(nearest_G4_10kb$nearby_features)] <- "<10kb"
+ctcf$nearest_G4[!is.na(nearest_G4_5kb$nearby_features)] <- "<5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_2.5kb$nearby_features)] <- "<2.5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_1kb$nearby_features)] <- "<1kb"
+
+ctcf$nearest_G4_type <- "none"
+ctcf$nearest_G4_type[!is.na(nearest_G4_50kb$nearby_features)] <- nearest_G4_50kb$nearby_features[!is.na(nearest_G4_50kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_10kb$nearby_features)] <- nearest_G4_10kb$nearby_features[!is.na(nearest_G4_10kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_5kb$nearby_features)] <- nearest_G4_5kb$nearby_features[!is.na(nearest_G4_5kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_2.5kb$nearby_features)] <- nearest_G4_2.5kb$nearby_features[!is.na(nearest_G4_2.5kb$nearby_features)]
+ctcf$nearest_G4_type[!is.na(nearest_G4_1kb$nearby_features)] <- nearest_G4_1kb$nearby_features[!is.na(nearest_G4_1kb$nearby_features)]
+
+ctcf$nearest_G4_type[grep("pro",ctcf$nearest_G4_type)] <- "G4pro"
+
+results$nearest_G4 <- ctcf$nearest_G4
+results$nearest_G4_type <- ctcf$nearest_G4_type
+table(ctcf$nearest_G4)
+table(ctcf$nearest_G4_type)
+table(ctcf$nearest_G4, ctcf$nearest_G4_type)
+```
+
+```{r}
+nearest_G4_0kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 0,ignore.strand = T,name_field = "name")
+nearest_G4_1kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 1000,ignore.strand = T,name_field = "name")
+nearest_G4_2.5kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 2500,ignore.strand = T,name_field = "name")
+nearest_G4_5kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 5000,ignore.strand = T,name_field = "name")
+nearest_G4_10kb <- bedscout::annotate_nearby_features(ctcf,G4pred_bed,distance_cutoff = 10000,ignore.strand = T,name_field = "name")
+
+
+ctcf$nearest_G4 <- factor(">10kb", levels=c("0kb","<1kb","<2.5kb","<5kb","<10kb",">10kb"))
+ctcf$nearest_G4[!is.na(nearest_G4_10kb$nearby_features)] <- "<10kb"
+ctcf$nearest_G4[!is.na(nearest_G4_5kb$nearby_features)] <- "<5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_2.5kb$nearby_features)] <- "<2.5kb"
+ctcf$nearest_G4[!is.na(nearest_G4_1kb$nearby_features)] <- "<1kb"
+ctcf$nearest_G4[!is.na(nearest_G4_0kb$nearby_features)] <- "0kb"
+
+results$nearest_G4 <- ctcf$nearest_G4
+table(results$nearest_G4)
+table(results$nearest_G4, results$pro)
+```
+```{r fig.width=5, fig.height=2}
+mdf<-reshape2::melt(table(results$nearest_G4, results$pro))
+ggplot(mdf,aes(Var1, Var2, fill= value)) + 
+  geom_tile(show.legend = F) + geom_text(aes(label=value)) +
+  scale_fill_gradient(low="white", high="orange") + theme_minimal()
 ```
 
 ```{r fig.width=3, fig.height=3}
-peak_cats <- bedscout::import_named_bed_into_list(peaks_bed)
-plot_bw_profile("../data/regions/G4.mm10.minus.bw",peak_cats,labels=c(peak_cats[[1]][1,]$name,peak_cats[[2]][1,]$name,peak_cats[[3]][1,]$name,peak_cats[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
-```
-```{r fig.width=4, fig.height=4}
-peak_cats_mm9 <- bedscout::import_named_bed_into_list('../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_6_categories.mm9lift.bed')
-plot_bw_profile("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9,labels=c(peak_cats_mm9[[1]][1,]$name,peak_cats_mm9[[2]][1,]$name,peak_cats_mm9[[3]][1,]$name,peak_cats_mm9[[4]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal)
-```
-```{r fig.width=4, fig.height=4}
-peak_cats_mm9 <- bedscout::import_named_bed_into_list('../data/CutNTag_ChIP-Seq/bed/Wulfridge_CTCF_in_2_categories.mm9lift.bed')
-plot_bw_profile("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9,labels=c(peak_cats_mm9[[1]][1,]$name,peak_cats_mm9[[2]][1,]$name),mode="center",show_error = T,verbose=F, colors=mypal,bin_size = 200)
-ggsave("Profile_predicted_G4_motif.pdf")
+ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + geom_hline(yintercept = 0, linetype="dotted")
+ggsave("Violin_CTCF_signal_by_predG4distance.pdf")
 ```
 
-```{r fig.width=6, fig.height=4}
-p1 <- plot_bw_heatmap("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9[[1]],mode="center",verbose=F,max_rows_allowed = 500, zmax=0.3,cmap="Greys") + ggtitle("CTCF-G4")
-p2 <- plot_bw_heatmap("~/Google Drive/Simon/Manuscripts/Puck/github/genome/mm9/predG4.mm9.bw",peak_cats_mm9[[2]],mode="center",verbose=F,max_rows_allowed = 500, zmax=0.3,cmap="Greys") + ggtitle("CTCF-only")
-ggarrange(p1,p2)
-ggsave("Heatmap_predicted_G4_motif.pdf")
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PDS_lfc_by_predG4distance.pdf")
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results)
+```
+
+```{r fig.width=3, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance.pdf")
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results)
+```
+```{r fig.width=5, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PDS_lfc_by_predG4distance_pro.pdf")
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="noPro",])
+```
+```{r}
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",])
+```
+```{r fig.width=5, fig.height=3}
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance_pro.pdf")
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",])
+```
+
+```{r}
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="Pro",])
 ```
