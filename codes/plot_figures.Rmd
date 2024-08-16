@@ -322,7 +322,8 @@ compare_means(deseq.lfc.pdc ~ class,data = results)
 
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","raw.lfc.pds_1","raw.lfc.pds_2","raw.lfc.pdc_1","raw.lfc.pdc_2")))
-ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4))
+ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal, add="median_iqr") + geom_hline(yintercept=0,linetype = "dotted") + coord_cartesian(ylim=c(-4,4)) +
+  stat_compare_means(aes(group = class), label.y = 3.6, size = 2)
 ggsave("Violin_CTCF_lfc_individual_reps.pdf",last_plot())
 ```
 
@@ -527,16 +528,22 @@ table(results$nearest_G4_type)
 table(results$nearest_G4, results$nearest_G4_type)
 ```
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + geom_hline(yintercept = 0, linetype="dotted")
+ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + 
+  stat_compare_means(label.y = 8, label.x = 3, size = 3) +
+  geom_hline(yintercept = 0, linetype="dotted")
 ggsave("Violin_CTCF_signal_by_G4distance.pdf")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-4,4)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + 
+  geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(label.y = 3, label.x = 2, size = 3)
 ggsave("Violin_CTCF_PDS_lfc_by_G4distance.pdf")
 ```
 ```{r}
-compare_means(deseq.lfc.pds ~ nearest_G4, results)
+nearest_G4_stats = compare_means(deseq.lfc.pds ~ nearest_G4, results)
+nearest_G4_stats
+write_tsv(nearest_G4_stats, "pds_G4distance_plots-statistics.tsv")
 ```
 
 ```{r fig.width=3, fig.height=3}
@@ -545,10 +552,13 @@ ggsave("Violin_CTCF_PhenDC3_lfc_by_G4distance.pdf")
 ```
 
 ```{r}
-compare_means(deseq.lfc.pdc ~ nearest_G4, results)
+nearest_G4_stats = compare_means(deseq.lfc.pdc ~ nearest_G4, results)
+nearest_G4_stats
+write_tsv(nearest_G4_stats, "pdc_G4distance_plots-statistics.tsv")
 ```
 ```{r fig.width=5, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,4)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(aes(group = nearest_G4_type))
 ggsave("Violin_CTCF_PDS_lfc_by_G4distance_pro.pdf")
 ```
 ```{r}
@@ -644,12 +654,14 @@ ggsave("Heatmap_CTCF_sites_by_predG4distance.pdf")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + geom_hline(yintercept = 0, linetype="dotted")
+ggviolin(results,x="nearest_G4", y="mean.mock",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(0,10)) + geom_hline(yintercept = 0, linetype="dotted") +
+  stat_compare_means(aes(group = nearest_G4), label.y = 8, label.x = 2, size = 3)
 ggsave("Violin_CTCF_signal_by_predG4distance.pdf")
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = median(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(label.y = 1.3, label.x = 3, size = 2)
 ggsave("Violin_CTCF_PDS_lfc_by_predG4distance.pdf")
 ```
 ```{r}
@@ -657,7 +669,8 @@ compare_means(deseq.lfc.pds ~ nearest_G4, results)
 ```
 
 ```{r fig.width=3, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill=mypal[1],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(label.y = 1.3, label.x = 3, size = 2)
 ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance.pdf")
 ```
 
@@ -665,7 +678,8 @@ ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance.pdf")
 compare_means(deseq.lfc.pdc ~ nearest_G4, results)
 ```
 ```{r fig.width=5, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2 ) + geom_hline(yintercept = mean(results$deseq.lfc.pds[results$nearest_G4=="0kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(aes(group = pro), label.y = 1.3, label.x = 3, size = 1.5)
 ggsave("Violin_CTCF_PDS_lfc_by_predG4distance_pro.pdf")
 ```
 ```{r}
@@ -675,7 +689,8 @@ compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="noPro",])
 compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",])
 ```
 ```{r fig.width=5, fig.height=3}
-ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
+ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2) +
+  stat_compare_means(aes(group = pro), label.y = 1.3, label.x = 3, size = 1.5)
 ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance_pro.pdf")
 ```
 
