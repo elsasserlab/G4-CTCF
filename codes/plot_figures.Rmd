@@ -568,9 +568,13 @@ ggsave("Violin_CTCF_PDS_lfc_by_G4distance_pro.pdf")
 ```
 ```{r}
 compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4",])
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4",]) %>% 
+write_tsv(., "pds_G4distance_plots-nearest_G4-statistics.tsv")
 ```
 ```{r}
 compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$nearest_G4_type=="G4pro",]) %>% 
+write_tsv(., "pds_G4distance_plots-nearest_G4pro-statistics.tsv")
 ```
 ```{r fig.width=5, fig.height=3}
 ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="nearest_G4_type",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-2,2)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2)
@@ -579,10 +583,14 @@ ggsave("Violin_CTCF_PhenDC3_lfc_by_G4distance_pro.pdf")
 
 ```{r}
 compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4",])
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4",]) %>% 
+write_tsv(., "phendc_G4distance_plots-nearest_G4-statistics.tsv")
 ```
 
 ```{r}
 compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4pro",])
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type=="G4pro",]) %>% 
+write_tsv(., "phendc_G4distance_plots-nearest_G4pro-statistics.tsv")
 ```
 ### Distance-based analysis, this time with predicted G4 motifs, not experimental peaks
 
@@ -688,10 +696,15 @@ ggviolin(results,x="nearest_G4", y="deseq.lfc.pds",fill="pro",palette=mypal[c(1,
 ggsave("Violin_CTCF_PDS_lfc_by_predG4distance_pro.pdf")
 ```
 ```{r}
-compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="noPro",])
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro == "noPro", ])
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro == "noPro", ]) %>%
+  write_tsv(., "pds_G4distance_plots-noPro-statistics.tsv")
+  
 ```
 ```{r}
-compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",])
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",]) 
+compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",]) %>%
+  write_tsv(., "pds_G4distance_plots-Pro-statistics.tsv")
 ```
 ```{r fig.width=5, fig.height=3}
 ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2) +
@@ -700,9 +713,14 @@ ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance_pro.pdf")
 ```
 
 ```{r}
-compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",])
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",]) 
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",]) %>%
+  write_tsv(., "phendc_G4distance_plots-noPro-statistics.tsv")
 ```
 
 ```{r}
 compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="Pro",])
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="Pro",]) %>%
+  write_tsv(., "phendc_G4distance_plots-Pro-statistics.tsv")
+
 ```
