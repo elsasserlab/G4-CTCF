@@ -1,0 +1,16 @@
+.y.	group1	group2	p	p.adj	p.format	p.signif	method
+deseq.lfc.pds	0kb	<1kb	0.10538290743216154	1	0.11	ns	Wilcoxon
+deseq.lfc.pds	0kb	<2.5kb	0.2659680759361767	1	0.27	ns	Wilcoxon
+deseq.lfc.pds	0kb	<5kb	0.5366423981612642	1	0.54	ns	Wilcoxon
+deseq.lfc.pds	0kb	<10kb	0.5021303036537792	1	0.50	ns	Wilcoxon
+deseq.lfc.pds	0kb	>10kb	0.4657515440008101	1	0.47	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<2.5kb	0.7562362117494614	1	0.76	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<5kb	0.44809406143960145	1	0.45	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<10kb	0.7214519299596551	1	0.72	ns	Wilcoxon
+deseq.lfc.pds	<1kb	>10kb	0.9437356065025945	1	0.94	ns	Wilcoxon
+deseq.lfc.pds	<2.5kb	<5kb	0.6556012406263125	1	0.66	ns	Wilcoxon
+deseq.lfc.pds	<2.5kb	<10kb	0.879223074093229	1	0.88	ns	Wilcoxon
+deseq.lfc.pds	<2.5kb	>10kb	0.8370292584650709	1	0.84	ns	Wilcoxon
+deseq.lfc.pds	<5kb	<10kb	0.8373744290356658	1	0.84	ns	Wilcoxon
+deseq.lfc.pds	<5kb	>10kb	0.6761870765802207	1	0.68	ns	Wilcoxon
+deseq.lfc.pds	<10kb	>10kb	0.7829023079161561	1	0.78	ns	Wilcoxon
