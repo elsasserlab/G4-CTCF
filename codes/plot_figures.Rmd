@@ -251,7 +251,7 @@ ggsave("Violin_CTCF_classes.pdf",last_plot())
 ```
 
 ```{r fig.width=3, fig.height=3}
-p <- ggviolin(results,x ="pro",y="mean.mock",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
+p <- ggviolin(results,x ="class",y="mean.mock",fill="pro",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
 annotate_figure(p,fig.lab = "CTCF signal by class in mock condition, mean of two reps, median+iqr",fig.lab.size = 6)
 ggsave("Violin_CTCF_classes_pro.pdf",last_plot())
 ```
