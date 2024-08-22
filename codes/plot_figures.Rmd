@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
 
 
@@ -264,6 +266,12 @@ ggsave("Boxplot_CTCF_reps.pdf",last_plot())
 
 ```{r fig.width=5, fig.height=3}
 mdf <- reshape2::melt(dplyr::select(results,c("class","mock_1","mock_2","PDS_1","PDS_2","PhenDC3_1","PhenDC3_2")))
+
+mdf_stats_class = compare_means(
+  value ~ class, group.by = "variable",
+  data = mdf
+)
+
 ggviolin(mdf,x ="variable",y="value",fill="class",palette=mypal,add="median_iqr") + coord_cartesian(ylim=c(0,10))
 ggsave("Violin_CTCF_reps.pdf",last_plot())
 ```
@@ -702,9 +710,15 @@ compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro == "noPro", ]) %>%
   
 ```
 ```{r}
-compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",]) 
 compare_means(deseq.lfc.pds ~ nearest_G4, results[results$pro=="Pro",]) %>%
   write_tsv(., "pds_G4distance_plots-Pro-statistics.tsv")
+
+compare_means(deseq.lfc.pds ~ pro, group.by = "nearest_G4", results) %>%
+  write_tsv(., "pds_G4distance_plots-between_prom_types_stats.tsv")
+
+compare_means(deseq.lfc.pds ~ nearest_G4, group.by = "pro", results) %>%
+  write_tsv(., "pds_G4distance_plots-within_prom_types_stats.tsv")
+
 ```
 ```{r fig.width=5, fig.height=3}
 ggviolin(results,x="nearest_G4", y="deseq.lfc.pdc",fill="pro",palette=mypal[c(1,3,5)],add="median_iqr") + coord_cartesian(ylim=c(-0.5,1.5)) + geom_hline(yintercept = 0,linewidth = 0.2) + geom_hline(yintercept = mean(results$deseq.lfc.pdc[results$nearest_G4=="<1kb"]), linetype="dotted",linewidth = 0.2) +
@@ -713,14 +727,14 @@ ggsave("Violin_CTCF_PhenDC3_lfc_by_predG4distance_pro.pdf")
 ```
 
 ```{r}
-compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",]) 
-compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="noPro",]) %>%
+compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro == "noPro", ]) %>%
   write_tsv(., "phendc_G4distance_plots-noPro-statistics.tsv")
-```
 
-```{r}
-compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="Pro",])
-compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$pro=="Pro",]) %>%
-  write_tsv(., "phendc_G4distance_plots-Pro-statistics.tsv")
+compare_means(deseq.lfc.pdc ~ pro, group.by = "nearest_G4", results) %>%
+  write_tsv(., "phendc_G4distance_plots-between_prom_types_stats.tsv")
+
+compare_means(deseq.lfc.pdc ~ nearest_G4, group.by = "pro", results) %>%
+  write_tsv(., "phendc_G4distance_plots-within_prom_types_stats.tsv")
+
 
 ```
