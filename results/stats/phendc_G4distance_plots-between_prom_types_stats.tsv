@@ -1,0 +1,7 @@
+nearest_G4	.y.	group1	group2	p	p.adj	p.format	p.signif	method
+<1kb	deseq.lfc.pdc	Pro	noPro	1.9806675410945314e-21	1.2e-20	< 2e-16	****	Wilcoxon
+<10kb	deseq.lfc.pdc	Pro	noPro	0.0051567837567310145	0.01	0.0052	**	Wilcoxon
+<2.5kb	deseq.lfc.pdc	Pro	noPro	2.7627660808929137e-16	1.4e-15	2.8e-16	****	Wilcoxon
+<5kb	deseq.lfc.pdc	Pro	noPro	3.6269450390311676e-9	1.1e-8	3.6e-09	****	Wilcoxon
+0kb	deseq.lfc.pdc	Pro	noPro	3.6924303657516844e-13	1.5e-12	3.7e-13	****	Wilcoxon
+>10kb	deseq.lfc.pdc	Pro	noPro	0.15321304389934615	0.15	0.1532	ns	Wilcoxon

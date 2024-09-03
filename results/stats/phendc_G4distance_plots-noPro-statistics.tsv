@@ -1,0 +1,16 @@
+.y.	group1	group2	p	p.adj	p.format	p.signif	method
+deseq.lfc.pdc	0kb	<1kb	1.3652675904412397e-12	1.9e-11	1.4e-12	****	Wilcoxon
+deseq.lfc.pdc	0kb	<2.5kb	4.2783769382972917e-16	6.4e-15	4.3e-16	****	Wilcoxon
+deseq.lfc.pdc	0kb	<5kb	8.202918172401397e-8	9e-7	8.2e-08	****	Wilcoxon
+deseq.lfc.pdc	0kb	<10kb	1.2151845095733872e-5	1.1e-4	1.2e-05	****	Wilcoxon
+deseq.lfc.pdc	0kb	>10kb	0.3209352667333745	0.64	0.32094	ns	Wilcoxon
+deseq.lfc.pdc	<1kb	<2.5kb	0.04517530699772758	0.19	0.04518	*	Wilcoxon
+deseq.lfc.pdc	<1kb	<5kb	0.050205251106443506	0.19	0.05021	ns	Wilcoxon
+deseq.lfc.pdc	<1kb	<10kb	0.037403495572467325	0.19	0.03740	*	Wilcoxon
+deseq.lfc.pdc	<1kb	>10kb	1.5760392250386294e-8	1.9e-7	1.6e-08	****	Wilcoxon
+deseq.lfc.pdc	<2.5kb	<5kb	2.9746501519203276e-4	0.0021	0.00030	***	Wilcoxon
+deseq.lfc.pdc	<2.5kb	<10kb	6.329405330511063e-4	0.0038	0.00063	***	Wilcoxon
+deseq.lfc.pdc	<2.5kb	>10kb	2.147689339870593e-10	2.8e-9	2.1e-10	****	Wilcoxon
+deseq.lfc.pdc	<5kb	<10kb	0.6070076570461782	0.64	0.60701	ns	Wilcoxon
+deseq.lfc.pdc	<5kb	>10kb	3.7667268245060346e-6	3.8e-5	3.8e-06	****	Wilcoxon
+deseq.lfc.pdc	<10kb	>10kb	7.03701054060195e-5	5.6e-4	7.0e-05	****	Wilcoxon

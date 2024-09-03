@@ -1,0 +1,11 @@
+.y.	group1	group2	p	p.adj	p.format	p.signif	method
+deseq.lfc.pdc	<1kb	<2.5kb	8.919235191831816e-11	6.2e-10	8.9e-11	****	Wilcoxon
+deseq.lfc.pdc	<1kb	<5kb	5.800553065277722e-13	4.6e-12	5.8e-13	****	Wilcoxon
+deseq.lfc.pdc	<1kb	<10kb	3.544656111935617e-14	3.2e-13	3.5e-14	****	Wilcoxon
+deseq.lfc.pdc	<1kb	<50kb	8.780791231009444e-38	8.8e-37	< 2e-16	****	Wilcoxon
+deseq.lfc.pdc	<2.5kb	<5kb	0.8199988702608605	1	0.82000	ns	Wilcoxon
+deseq.lfc.pdc	<2.5kb	<10kb	0.36894187180312665	1	0.36894	ns	Wilcoxon
+deseq.lfc.pdc	<2.5kb	<50kb	0.19793637251084437	0.79	0.19794	ns	Wilcoxon
+deseq.lfc.pdc	<5kb	<10kb	0.4430355838944434	1	0.44304	ns	Wilcoxon
+deseq.lfc.pdc	<5kb	<50kb	0.05676412865814009	0.28	0.05676	ns	Wilcoxon
+deseq.lfc.pdc	<10kb	<50kb	2.4373005942766236e-4	0.0015	0.00024	***	Wilcoxon
