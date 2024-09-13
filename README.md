@@ -24,7 +24,7 @@ The codes folder consists of the deepTools bash scripts used for the deeptools r
 
 # Data
 
-Normalized bigwig files are temporarily stored [here](https://filesender.renater.fr/?s=download&token=719c78b5-f66f-4a14-a136-05924840cd71).
+Normalized bigwig files are temporarily stored [here](https://data.mendeley.com/preview/h46bbkndy9?a=cea130ea-7ffc-4484-9841-f9856787ab8b).
 
 # References
 
