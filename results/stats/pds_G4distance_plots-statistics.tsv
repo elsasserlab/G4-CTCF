@@ -2,15 +2,15 @@
 deseq.lfc.pds	<1kb	<2.5kb	0.7791980743720363	1	0.77920	ns	Wilcoxon
 deseq.lfc.pds	<1kb	<5kb	0.7714229736713496	1	0.77142	ns	Wilcoxon
 deseq.lfc.pds	<1kb	<10kb	0.39741920328396274	1	0.39742	ns	Wilcoxon
-deseq.lfc.pds	<1kb	<50kb	2.0812101994970956e-10	2.1e-9	2.1e-10	****	Wilcoxon
-deseq.lfc.pds	<1kb	>50kb	1.89516098008748e-27	2.8e-26	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<1kb	<50kb	2.0811921514541e-10	2.1e-9	2.1e-10	****	Wilcoxon
+deseq.lfc.pds	<1kb	>50kb	1.8951328076415208e-27	2.8e-26	< 2e-16	****	Wilcoxon
 deseq.lfc.pds	<2.5kb	<5kb	0.9968232594822733	1	0.99682	ns	Wilcoxon
 deseq.lfc.pds	<2.5kb	<10kb	0.7243565900738682	1	0.72436	ns	Wilcoxon
-deseq.lfc.pds	<2.5kb	<50kb	1.2631376717357675e-4	8.8e-4	0.00013	***	Wilcoxon
-deseq.lfc.pds	<2.5kb	>50kb	7.210550283810219e-12	7.9e-11	7.2e-12	****	Wilcoxon
+deseq.lfc.pds	<2.5kb	<50kb	1.263137671753118e-4	8.8e-4	0.00013	***	Wilcoxon
+deseq.lfc.pds	<2.5kb	>50kb	7.2107661558895855e-12	7.9e-11	7.2e-12	****	Wilcoxon
 deseq.lfc.pds	<5kb	<10kb	0.6634500417133746	1	0.66345	ns	Wilcoxon
-deseq.lfc.pds	<5kb	<50kb	1.048555402350727e-6	8.4e-6	1.0e-06	****	Wilcoxon
-deseq.lfc.pds	<5kb	>50kb	7.161444268331371e-18	9.3e-17	< 2e-16	****	Wilcoxon
-deseq.lfc.pds	<10kb	<50kb	2.77164681379216e-8	2.5e-7	2.8e-08	****	Wilcoxon
-deseq.lfc.pds	<10kb	>50kb	3.4689783009160304e-25	4.899999999999999e-24	< 2e-16	****	Wilcoxon
-deseq.lfc.pds	<50kb	>50kb	1.1409930828671367e-16	1.4e-15	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<5kb	<50kb	1.0485554023712728e-6	8.4e-6	1.0e-06	****	Wilcoxon
+deseq.lfc.pds	<5kb	>50kb	7.161444266832883e-18	9.3e-17	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<10kb	<50kb	2.7717036050257146e-8	2.5e-7	2.8e-08	****	Wilcoxon
+deseq.lfc.pds	<10kb	>50kb	3.4688900934486055e-25	4.899999999999999e-24	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<50kb	>50kb	1.1410056011327056e-16	1.4e-15	< 2e-16	****	Wilcoxon

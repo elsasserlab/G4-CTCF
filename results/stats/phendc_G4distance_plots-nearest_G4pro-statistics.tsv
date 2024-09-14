@@ -7,5 +7,5 @@ deseq.lfc.pdc	<2.5kb	<5kb	0.8199988702608605	1	0.82000	ns	Wilcoxon
 deseq.lfc.pdc	<2.5kb	<10kb	0.36894187180312665	1	0.36894	ns	Wilcoxon
 deseq.lfc.pdc	<2.5kb	<50kb	0.19793637251084437	0.79	0.19794	ns	Wilcoxon
 deseq.lfc.pdc	<5kb	<10kb	0.4430355838944434	1	0.44304	ns	Wilcoxon
-deseq.lfc.pdc	<5kb	<50kb	0.05676412865814009	0.28	0.05676	ns	Wilcoxon
-deseq.lfc.pdc	<10kb	<50kb	2.4373005942766236e-4	0.0015	0.00024	***	Wilcoxon
+deseq.lfc.pdc	<5kb	<50kb	0.05676455815570824	0.28	0.05676	ns	Wilcoxon
+deseq.lfc.pdc	<10kb	<50kb	2.437322789516144e-4	0.0015	0.00024	***	Wilcoxon

@@ -478,46 +478,53 @@ ggdensity(
 ```
 
 
-```{r fig.width=4, fig.height=4}
-ggscatterhist(
+```{r fig.width=3, fig.height=3}
+ggscatter(
   results,
   x = "log2.mock",
   y = "log2.pds",
-  size = 0.2,
+  size = 1,shape=20,
   alpha = 0.1,
   color = "deseq.sig.pds",
-  margin.params = list(
-    fill = "class",
-    color = "black",
-    size = 0.2
-  ),
   palette = mypal[c(5, 2)]
 )
-ggsave(glue("{plot_folder}Scatter_CTCF_DESEq_PDSvsMock.pdf"),
-       last_plot())
+ggsave(glue("{plot_folder}Scatter_CTCF_DESEq_PDSvsMock.pdf"), rasterize(last_plot(),dpi = 600),width = 3, height= 3.2)
 ```
 ```{r fig.width=4, fig.height=4}
-ggscatterhist(
+ggscatter(
   results,
   x = "log2.mock",
   y = "log2.pdc",
-  size = 0.2,
+  size = 1,shape=20,
   alpha = 0.1,
-  color = "deseq.sig.pds",
-  margin.params = list(
-    fill = "class",
-    color = "black",
-    size = 0.2
-  ),
+  color = "deseq.sig.pdc",
   palette = mypal[c(5, 2)]
 )
-ggsave(glue("{plot_folder}Scatter_CTCF_DESEq_PhenDC3vsMock.pdf"), last_plot())
+ggsave(glue("{plot_folder}Scatter_CTCF_DESEq_PhenDC3vsMock.pdf"), rasterize(last_plot(),dpi = 600),width = 3, height= 3.2)
+```
+```{r}
+tb <- table(results$class)
+deseq.stats <- as.data.frame(t(as.matrix(tb)))
+deseq.stats[1,] <- colSums(deseq.stats)
+rownames(deseq.stats) <- c("Total")
+deseq.stats.percent <- deseq.stats
+deseq.stats.percent[1,] <- c(100,100)
+tb
 ```
 
 ```{r}
-table(results$deseq.sig.pds &
+tb <- table(results$deseq.sig.pds &
         (results$deseq.lfc.pds > 0),
-      results$pro)
+      results$class)
+deseq.stats <- rbind(deseq.stats, PDS.sig.up = as.data.frame.matrix(tb)[2,])
+tb
+```
+```{r}
+tb <- prop.table(table(results$deseq.sig.pds &
+        (results$deseq.lfc.pds > 0),
+      results$class),margin = 2)*100
+deseq.stats.percent <- rbind(deseq.stats.percent, PDS.sig.up  = as.data.frame.matrix(tb)[2,])
+tb
 ```
 
 ```{r fig.width=3, fig.height=2.5}
@@ -541,6 +548,23 @@ vl <- list(
 )
 plot(euler(vl), quantities = T)
 ```
+
+```{r}
+tb <- table(results$deseq.sig.pdc &
+        (results$deseq.lfc.pdc > 0),
+      results$class)
+deseq.stats <- rbind(deseq.stats, PhenDC3.sig.up = as.data.frame.matrix(tb)[2,])
+tb
+```
+
+```{r}
+tb <- prop.table(table(results$deseq.sig.pdc &
+        (results$deseq.lfc.pdc > 0),
+      results$class),margin = 2)*100
+deseq.stats.percent <- rbind(deseq.stats.percent, PhenDC3.sig.up = as.data.frame.matrix(tb)[2,])
+tb
+```
+
 
 ```{r fig.width=3, fig.height=2.5}
 table(results$deseq.sig.pdc &
@@ -572,6 +596,44 @@ mdf <- reshape2::melt(table(results$deseq.sigup.pds, results$deseq.sigup.pdc))
 ggplot(mdf, aes(Var1, Var2, fill = value)) +
   geom_tile(show.legend = F) + geom_text(aes(label = value)) +
   scale_fill_gradient(low = "white", high = "orange") + theme_minimal()
+```
+```{r}
+tb <- table(results$deseq.sigup.pds & results$deseq.sigup.pdc,
+      results$class)
+deseq.stats <- rbind(deseq.stats, both.sig.up = as.data.frame.matrix(tb)[2,])
+tb
+```
+
+```{r}
+tb <- prop.table(table(results$deseq.sigup.pds & results$deseq.sigup.pdc,
+      results$class),margin = 2)*100
+deseq.stats.percent <- rbind(deseq.stats.percent, both = as.data.frame.matrix(tb)[2,])
+tb
+```
+
+```{r fig.width=3, fig.height=2.5}
+table(results$deseq.sigup.pds & results$deseq.sigup.pdc, results$class)
+mdf <- reshape2::melt(table(results$deseq.sigup.pds & results$deseq.sigup.pdc, results$class))
+ggplot(mdf, aes(Var1, Var2, fill = value)) +
+  geom_tile(show.legend = F) + geom_text(aes(label = value)) +
+  scale_fill_gradient(low = "white", high = "orange") + theme_minimal()
+```
+
+```{r fig.width=2.5, fig.height=2.5}
+deseq.stats$class <- rownames(deseq.stats) 
+mdf <- reshape2::melt(deseq.stats)
+ggplot(mdf, aes(variable, class, fill = value)) +
+  geom_tile(show.legend = F) + geom_text(aes(label = value)) +
+  scale_fill_gradient(low = "white", high = "orange") + theme_minimal()
+ggsave(glue("{plot_folder}Table_CTCF_DESEq_Sigup.pdf"), rasterize(last_plot(),dpi = 600),width = 2.5, height= 2.5)
+```
+```{r fig.width=2.5, fig.height=2.5}
+deseq.stats.percent$class <- rownames(deseq.stats.percent) 
+mdf <- reshape2::melt(deseq.stats.percent[-1,])
+ggplot(mdf, aes(variable, class, fill = value)) +
+  geom_tile(show.legend = F) + geom_text(aes(label = round(mdf$value,2))) +
+  scale_fill_gradient(low = "white", high = "orange") + theme_minimal()
+ggsave(glue("{plot_folder}Table_CTCF_DESEq_Sigup_percent.pdf"), rasterize(last_plot(),dpi = 600),width = 2.5, height= 2.5)
 ```
 
 ```{r}
