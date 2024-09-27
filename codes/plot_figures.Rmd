@@ -18,6 +18,7 @@ library("wigglescout")
 library("eulerr")
 library("ggplot2")
 library(corrplot)
+library(bedscout)
 
 # export 
 result_folder = "../results/"
@@ -28,7 +29,8 @@ combined_bigwigs <- list.files("../mendeley/Figure2","CTCF_ChIP-seq.+bw",
                   full.names = TRUE)
 geo_bigwigs <- list.files("../mendeley/Figure2","GSM.+bw",
                   full.names = TRUE)
-
+geo_CnR_bigwigs <- list.files("../mendeley/FigureS2","GSM.+bw",
+                  full.names = TRUE)
 ```
 
 ```{r}
@@ -778,14 +780,22 @@ results$pds.quantile <- dplyr::ntile(results$mean.pds-results$mean.mock, n = 4)
 results$pdc.quantile <- dplyr::ntile(results$mean.pdc-results$mean.mock, n = 4)
 ```
 
-
-```{r fig.width=4, fig.height=3}
-tb <- table(results$pds.quantile, results$class)
-tb
-ggbarplot(as.data.frame(t(as.matrix(tb))),"Var2","Freq",fill="Var1",palette = c(mypal[1],"#aaaaaa"),label = TRUE, lab.pos="in",ylim=c(11000,13000))
-ggsave(glue("{plot_folder}Barplot_peakCat_by_PDSquantile.pdf"),
-       plot = last_plot())
+```{r fig.width=6, fig.height=3}
+top25.pds <- makeGRangesFromDataFrame(results[results$pds.quantile==4,1:3],na.rm=T)
+bot75.pds <- makeGRangesFromDataFrame(results[results$pds.quantile!=4,1:3],na.rm=T)
+top25.pds.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pds.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
+top25.pds.CTCF_only <- makeGRangesFromDataFrame(results[(results$pds.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
 ```
+
+```{r}
+vl <- list(
+  CTCF_G4 = top25.pds.CTCF_G4,
+  CTCF_only = top25.pds.CTCF_only,
+  G4motif = rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")
+)
+bedscout::plot_euler(grlist = vl,names = c("CTCF_G4","CTCF_only","G4motif"))
+```
+
 
 ```{r fig.width=3, fig.height=3}
 ggviolin(
@@ -800,9 +810,37 @@ ggsave(glue("{plot_folder}Violin_lfcPDS_by_PDSquantile.pdf"),
        plot = last_plot())
 ```
 
+```{r fig.width=3, fig.height=3}
+ggviolin(
+  results,
+  x = "pdc.quantile",
+  y = "deseq.lfc.pdc",
+  fill = mypal[3],
+  add = "median_iqr"
+) + coord_cartesian(ylim = c(-1.5, 1.5)) + geom_hline(yintercept = 0, linetype =
+                                                    "dotted")
+ggsave(glue("{plot_folder}Violin_lfcPDS_by_PhenDC3quantile.pdf"),
+       plot = last_plot())
+```
+
+
+```{r fig.width=4, fig.height=3}
+tb <- table(results$pds.quantile, results$class)
+tb
+ggbarplot(as.data.frame(t(as.matrix(tb))),"Var2","Freq",fill="Var1",palette = c(mypal[1],"#aaaaaa"),label = TRUE, lab.pos="in",ylim=c(11000,13000))
+ggsave(glue("{plot_folder}Barplot_peakCat_by_PDSquantile.pdf"),
+       plot = last_plot())
+```
+```{r fig.width=4, fig.height=3}
+tb <- table(results$pdc.quantile, results$class)
+tb
+ggbarplot(as.data.frame(t(as.matrix(tb))),"Var2","Freq",fill="Var1",palette = c(mypal[1],"#aaaaaa"),label = TRUE, lab.pos="in",ylim=c(11000,13000))
+ggsave(glue("{plot_folder}Barplot_peakCat_by_PhenDC3quantile.pdf"),
+       plot = last_plot())
+```
+
+
 ```{r fig.width=6, fig.height=3}
-top25.pds <- makeGRangesFromDataFrame(results[results$pds.quantile==4,1:3],na.rm=T)
-bot75.pds <- makeGRangesFromDataFrame(results[results$pds.quantile!=4,1:3],na.rm=T)
 p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = top25.pds, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,6))
 p2 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = bot75.pds, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,6))
 ggarrange(p1,p2, ncol=2)
@@ -810,9 +848,16 @@ ggsave(glue("{plot_folder}Profile_CTCF_top25_PDSquantile.pdf"),
        plot = last_plot())
 ```
 ```{r fig.width=6, fig.height=3}
-top25.pds.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pds.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
-top25.pds.CTCF_only <- makeGRangesFromDataFrame(results[(results$pds.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
+top25.pdc <- makeGRangesFromDataFrame(results[results$pdc.quantile==4,1:3],na.rm=T)
+bot75.pdc <- makeGRangesFromDataFrame(results[results$pdc.quantile!=4,1:3],na.rm=T)
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = top25.pdc, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,6))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = bot75.pdc, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,6))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCF_top25_PhenDC3quantile.pdf"),
+       plot = last_plot())
+```
 
+```{r fig.width=6, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_bigwigs[1:2],loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[c(1,2)]) + coord_cartesian(ylim=c(0,10))
 p2 <- plot_bw_profile(bwfiles = geo_bigwigs[1:2],loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[c(1,2)]) + coord_cartesian(ylim=c(0,10))
 ggarrange(p1,p2, ncol=2)
@@ -821,25 +866,113 @@ ggsave(glue("{plot_folder}Profile_CTCF_top25_PDSquantile_byG4overlap.pdf"),
 ```
 
 ```{r fig.width=6, fig.height=3}
-top25.pds.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pds.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
-top25.pds.CTCF_only <- makeGRangesFromDataFrame(results[(results$pds.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
+top25.pdc.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pdc.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
+top25.pdc.CTCF_only <- makeGRangesFromDataFrame(results[(results$pdc.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
 
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[c(1,3)],loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[c(1,3)]) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[c(1,3)],loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[c(1,3)]) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCF_top25_PhenDC3quantile_byG4overlap.pdf"),
+       plot = last_plot())
+```
+
+```{r fig.width=6, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_bigwigs[2],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
 p2 <- plot_bw_profile(bwfiles = geo_bigwigs[2],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
 ggarrange(p1,p2, ncol=2)
 ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PDSquantile_byG4.pdf"),
        plot = last_plot())
 ```
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PhenDC3quantile_byG4.pdf"),
+       plot = last_plot())
+```
+
+```{r fig.width=8, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+ggarrange(p1,p2,p3, ncol=3)
+```
+```{r fig.width=8, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+ggarrange(p1,p2,p3, ncol=3)
+```
+
+```{r fig.width=8, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+ggarrange(p1,p2,p3, ncol=3)
+```
+```{r fig.width=8, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+ggarrange(p1,p2,p3, ncol=3)
+```
+
+```{r fig.width=6, fig.height=3}
+df1 <-  data.frame(set="top25_CTCF_G4", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=top25.pds.CTCF_G4, labels=c("Mock","PDS")))[,6:7])
+df2 <- data.frame(set="top25_CTCF_only", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=top25.pds.CTCF_only, labels=c("Mock","PDS")))[,6:7])
+df3 <- data.frame(set="bottom75", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=bot75.pds, labels=c("Mock","PDS")))[,6:7])
+df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2], loci="../peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDS")))[,6:7])
+df <- rbind(df1,df2,df3,df4)
+df$lfc.pds <- log2(df$PDS/df$Mock)
+df$diff.pds <- df$PDS - df$Mock
+mdf <- melt(df)
+mdf$lg2 <- log2(mdf$value)
+ggviolin(mdf[mdf$variable %in% c("Mock","PDS"),], "set","lg2",fill="variable",palette = mypal, add="median_iqr")
+```
+```{r fig.width=4, fig.height=3}
+ggviolin(mdf[mdf$variable %in% "lfc.pds",], "set","value",fill="variable",palette = mypal, add="median_iqr") + geom_hline(yintercept = 0)
+```
+
+```{r fig.width=4, fig.height=3}
+ggviolin(mdf[mdf$variable %in% "diff.pds",], "set","value",fill="variable",palette = mypal, add="median_iqr") + coord_cartesian(ylim = c(-20,20)) + geom_hline(yintercept = 0)
+```
+
+```{r fig.width=6, fig.height=3}
+df1 <-  data.frame(set="top25_CTCF_G4", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=top25.pdc.CTCF_G4, labels=c("Mock","PDC")))[,6:7])
+df2 <- data.frame(set="top25_CTCF_only", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=top25.pdc.CTCF_only, labels=c("Mock","PDC")))[,6:7])
+df3 <- data.frame(set="bottom75", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=bot75.pdc, labels=c("Mock","PDC")))[,6:7])
+df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4], loci="../peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDC")))[,6:7])
+df <- rbind(df1,df2,df3,df4)
+df$lfc.pdc <- log2(df$PDC/df$Mock)
+df$diff.pdc <- df$PDC - df$Mock
+mdf <- melt(df)
+mdf$lg2 <- log2(mdf$value)
+ggviolin(mdf[mdf$variable %in% c("Mock","PDC"),], "set","lg2",fill="variable",palette = mypal, add="median_iqr")
+```
+
+
+```{r fig.width=4, fig.height=3}
+ggviolin(mdf[mdf$variable %in% "lfc.pdc",], "set","value",fill="variable",palette = mypal, add="median_iqr") + geom_hline(yintercept = 0)
+```
+
+```{r fig.width=4, fig.height=3}
+ggviolin(mdf[mdf$variable %in% "diff.pdc",], "set","value",fill="variable",palette = mypal, add="median_iqr") + coord_cartesian(ylim = c(-20,20)) + geom_hline(yintercept = 0)
+```
 
 ```{r fig.width=6, fig.height=3}
 top25.pds.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pds.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
 top25.pds.CTCF_only <- makeGRangesFromDataFrame(results[(results$pds.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
 
-p1 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc") + coord_cartesian(ylim=c(0,10))
-p2 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc") + coord_cartesian(ylim=c(0,10))
+p1 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[3]) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[3]) + coord_cartesian(ylim=c(0,10))
 ggarrange(p1,p2, ncol=2)
 ```
 
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[3]) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[3]) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+```
 
 ```{r fig.width=3, fig.height=3}
 ord.top25 <- order(rowMeans(as.data.frame(bw_heatmap(bwfiles = geo_bigwigs[1],loci = top25.pds, mode = "center"))))
@@ -873,13 +1006,26 @@ ggviolin(
   y = "G4_CnR_delta",
   fill = mypal[2],
   add = "median_iqr"
+) + coord_cartesian(ylim = c(-10, 15)) + geom_hline(yintercept = 1.55, linetype =
+                                                    "dotted")
+ggsave(glue("{plot_folder}Violin_G4_CnR_delta_by_PDSquantile.pdf"),
+       plot = last_plot())
+```
+```{r fig.width=3, fig.height=2}
+ggviolin(
+  results,
+  x = "pds.quantile",
+  y = "G4_CnR_lfc",
+  fill = mypal[2],
+  add = "median_iqr"
 ) + coord_cartesian(ylim = c(-10, 15)) + geom_hline(yintercept = 0, linetype =
                                                     "dotted")
 ggsave(glue("{plot_folder}Violin_G4_CnR_delta_by_PDSquantile.pdf"),
        plot = last_plot())
 ```
+
 ```{r}
-compare_means(G4_CnR_delta ~ pds.quantile, results)
+compare_means(G4_CnR_lfc ~ pds.quantile, results)
 ```
 ```{r}
 results$pds.quartile.top25 <- results$pds.quantile == 4
@@ -895,6 +1041,78 @@ export.bed(top25.pds,"../peaks/CTCF_peaks_top25_pds_up.bed")
 export.bed(bot75.pds,"../peaks/CTCF_peaks_bot75_pds_up.bed")
 ```
 
+
+### Analysis by G4 motif
+
+```{r fig.width=6, fig.height=3}
+tr.G4 <- rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")  
+tr.G4$name <- "G4"
+top25.pds.G4anno <- bedscout::annotate_nearby_features(top25.pds,tr.G4,name_field = "name", distance_cutoff = 1000)
+top25.pds.G4_1kb <- top25.pds.G4anno[!is.na(top25.pds.G4anno$nearby_features),]              
+top25.pds.noG4 <- top25.pds.G4anno[is.na(top25.pds.G4anno$nearby_features),]               
+                                
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pds.G4_1kb, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pds.noG4, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+```
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[1:2],loci = top25.pds.G4_1kb, mode = "center",verbose = F, colors = mypal[c(1,2)]) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[1:2],loci = top25.pds.noG4, mode = "center",verbose = F, colors = mypal[c(1,2)]) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCF_top25_PDSquantile_byG4overlap.pdf"),
+       plot = last_plot())
+```
+
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[2],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.G4_1kb, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[2],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.noG4, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PDSquantile_byG4motif1kb.pdf"),
+       plot = last_plot())
+```
+
+```{r fig.width=6, fig.height=3}
+top25.pdc.G4anno <- bedscout::annotate_nearby_features(top25.pdc,tr.G4,name_field = "name", distance_cutoff = 1000)
+top25.pdc.G4_1kb <- top25.pds.G4anno[!is.na(top25.pds.G4anno$nearby_features),]              
+top25.pdc.noG4 <- top25.pds.G4anno[is.na(top25.pds.G4anno$nearby_features),]               
+                                
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pdc.G4_1kb, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pdc.noG4, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+```
+
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.G4_1kb, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.noG4, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+ggarrange(p1,p2, ncol=2)
+ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PhenDC3quantile_byG4motif1kb.pdf"),
+       plot = last_plot())
+```
+```{r fig.width=6, fig.height=3}
+tr.G4 <- rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")  
+tr.G4$name <- "G4"
+top25.pdc.G4anno <- bedscout::annotate_nearby_features(top25.pdc,tr.G4,name_field = "name", distance_cutoff = 1000)
+top25.pdc.G4_1kb <- top25.pdc.G4anno[!is.na(top25.pdc.G4anno$nearby_features),]              
+top25.pdc.noG4 <- top25.pdc.G4anno[is.na(top25.pdc.G4anno$nearby_features),]               
+                                
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pdc.G4_1kb, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs, loci = top25.pdc.noG4, mode = "center",verbose = F, colors = mypal) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+```
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[c(1,3)],loci = top25.pdc.G4_1kb, mode = "center",verbose = F, colors = mypal[c(1,3)]) + coord_cartesian(ylim=c(0,10))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[c(1,3)],loci = top25.pdc.noG4, mode = "center",verbose = F, colors = mypal[c(1,3)]) + coord_cartesian(ylim=c(0,10))
+ggarrange(p1,p2, ncol=2)
+```
+
+
+```{r fig.width=6, fig.height=3}
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.G4_1kb, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pds.noG4, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+ggarrange(p1,p2, ncol=2)
+```
+
+### Analysis by G4 quantile
 ```{r fig.width=3, fig.height=3}
 ggviolin(
   results,
