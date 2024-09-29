@@ -884,8 +884,8 @@ ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PDSquantile_byG4.pdf"),
        plot = last_plot())
 ```
 ```{r fig.width=6, fig.height=3}
-p1 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
-p2 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[2],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
+p2 <- plot_bw_profile(bwfiles = geo_bigwigs[3],bg_bwfiles = geo_bigwigs[1], loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[3],norm_mode = "log2fc",show_error = T) + coord_cartesian(ylim=c(-1,1))
 ggarrange(p1,p2, ncol=2)
 ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PhenDC3quantile_byG4.pdf"),
        plot = last_plot())
