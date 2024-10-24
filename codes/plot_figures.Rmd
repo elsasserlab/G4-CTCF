@@ -17,19 +17,19 @@ library("ggpubr")
 library("wigglescout")
 library("eulerr")
 library("ggplot2")
-library(corrplot)
-library(bedscout)
+library("corrplot")
+library("bedscout")
 
 # export 
 result_folder = "../results/"
 plot_folder = "../results/plots/"
 stat_output = "../results/stats/"
 
-combined_bigwigs <- list.files("../mendeley/Figure2","CTCF_ChIP-seq.+bw",
+combined_bigwigs <- list.files("../data/mendeley/Figure2", pattern = "*_CTCF*.bw",
                   full.names = TRUE)
-geo_bigwigs <- list.files("../mendeley/Figure2","GSM.+bw",
+geo_bigwigs <- list.files("../data/mendeley/Figure2",pattern ="*_CTCF.bw",
                   full.names = TRUE)
-geo_CnR_bigwigs <- list.files("../mendeley/FigureS2","GSM.+bw",
+geo_CnR_bigwigs <- list.files("../data/mendeley/FigureS2", pattern = "*Wulfridge.bw",
                   full.names = TRUE)
 ```
 
@@ -127,10 +127,10 @@ get_nreads_columns <- function(df, length_factor = 100) {
 
 
 ```{r}
-ctcf.and.G4.pro <- import("../peaks/G4 CTCF_with_promoters_sorted.bed")
-ctcf.not.G4.pro <- import("../peaks/CTCF-only_with_promoters_sorted.bed")
-ctcf.and.G4.npr <- import("../peaks/G4 CTCF_without_promoters_sorted.bed")
-ctcf.not.G4.npr <- import("../peaks/CTCF-only_without_promoters_sorted.bed")
+ctcf.and.G4.pro <- import("../data/peaks/G4 CTCF_with_promoters_sorted.bed")
+ctcf.not.G4.pro <- import("../data/peaks/CTCF-only_with_promoters_sorted.bed")
+ctcf.and.G4.npr <- import("../data/peaks/G4 CTCF_without_promoters_sorted.bed")
+ctcf.not.G4.npr <- import("../data/peaks/CTCF-only_without_promoters_sorted.bed")
 
 ctcf.and.G4.pro$class <- "CTCF_and_G4"
 ctcf.not.G4.pro$class <- "CTCF_not_G4"
@@ -147,14 +147,14 @@ ctcf <- c(ctcf.and.G4,ctcf.not.G4)
 ctcf <- sortSeqlevels(ctcf)
 ctcf <- sort(ctcf)
 names(ctcf) <- paste0(ctcf$class," ",ctcf$pro)
-peaks_bed <- "../peaks/CTCF_G4_in_6_categories.bed"
+peaks_bed <- "../data/peaks/CTCF_G4_in_6_categories.bed"
 export.bed(ctcf, peaks_bed)
 ```
 
 ### check MACS peak widths
 ```{r fig.width=3, fig.height=3}
-ctcf.raw <- import("../peaks/CTCF_mES_peaks.narrowPeak")
-G4.raw <- import("../peaks/G4_WT_peaks.narrowPeak")
+ctcf.raw <- import("../data/peaks/CTCF_mES_peaks.narrowPeak")
+G4.raw <- import("../data/peaks/G4_WT_peaks.narrowPeak")
 ctcf.raw$class <- "CTCF"
 G4.raw$class <- "G4"
 ctcf.raw$pro <- "NA"
@@ -183,7 +183,7 @@ pds_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958385_GSM7116279_E14_PDS_CTCF
 pdc_bigwigs = c("../data/CutNTag_ChIP-Seq/bw/SRR23958383_GSM7116281_E14_PhenDC3_CTCF_Rep1_Mus_musculus_ChIP-Seq.CPMnorm.bw",
                 "../data/CutNTag_ChIP-Seq/bw/SRR23958382_GSM7116282_E14_PhenDC3_CTCF_Rep2_Mus_musculus_ChIP-Seq.CPMnorm.bw")
 
-G4_bigwigs = c("../mendeley/Figure1/G4_CUT-Tag_thisStudy.bw")
+G4_bigwigs = c("../data/mendeley/Figure1/G4_CUT-Tag_thisStudy.bw")
 
 cov.mocks <- bw_loci(mocks_bigwigs,peaks_bed,labels=c("mock_1","mock_2"))
 cov.pds <- bw_loci(pds_bigwigs,peaks_bed,labels=c("PDS_1","PDS_2"))
@@ -200,33 +200,33 @@ res <- cor(corr_df[,2:13])
 corrplot(res, type = "upper", order = "hclust",tl.col = "black", tl.srt = 45,addCoef.col = 'black',tl.pos = 'd',    cl.pos = 'n', col.lim=c(0.93, 1),is.corr = F, method = 'color')
 ```
 ```{r fig.height=3, fig.width=9}
-p1 <- plot_bw_profile(c(mocks_bigwigs[1],pds_bigwigs[1],pdc_bigwigs[1]),loci = "../peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
-p2 <- plot_bw_profile(c(mocks_bigwigs[2],pds_bigwigs[2],pdc_bigwigs[2]),loci = "../peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
-p3 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
+p1 <- plot_bw_profile(c(mocks_bigwigs[1],pds_bigwigs[1],pdc_bigwigs[1]),loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
+p2 <- plot_bw_profile(c(mocks_bigwigs[2],pds_bigwigs[2],pdc_bigwigs[2]),loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
+p3 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.4))
 ggarrange(p1,p2,p3, ncol=3)
 ```
 
 ```{r fig.height=3, fig.width=6}
-p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = "../peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,5))
-p2 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.6))
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,5))
+p2 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.6))
 ggarrange(p1,p2, ncol=2)
 ```
 ```{r fig.height=3, fig.width=6}
-p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = "../peaks/CTCF-only_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,5))
-p2 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../peaks/CTCF-only_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.6))
+p1 <- plot_bw_profile(bwfiles = geo_bigwigs,loci = "../data/peaks/CTCF-only_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,5))
+p2 <- plot_bw_profile(bwfiles = combined_bigwigs,loci = "../data/peaks/CTCF-only_with_promoters_sorted.bed",mode = "center",verbose = F) + coord_cartesian(ylim=c(0,2.6))
 ggarrange(p1,p2, ncol=2)
 ```
 ```{r fig.height=3, fig.width=9}
-p1 <- plot_bw_loci_scatter(mocks_bigwigs[1],mocks_bigwigs[2], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
-p2 <- plot_bw_loci_scatter(pds_bigwigs[1],pds_bigwigs[2], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
-p3 <- plot_bw_loci_scatter(pdc_bigwigs[1],pdc_bigwigs[2], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p1 <- plot_bw_loci_scatter(mocks_bigwigs[1],mocks_bigwigs[2], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p2 <- plot_bw_loci_scatter(pds_bigwigs[1],pds_bigwigs[2], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p3 <- plot_bw_loci_scatter(pdc_bigwigs[1],pdc_bigwigs[2], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
 ggarrange(p1,p2,p3, ncol=3)
 ```
 
 ```{r fig.height=3, fig.width=9}
-p1 <- plot_bw_loci_scatter(combined_bigwigs[1],combined_bigwigs[2], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
-p2 <- plot_bw_loci_scatter(combined_bigwigs[2],combined_bigwigs[3], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
-p3 <- plot_bw_loci_scatter(combined_bigwigs[1],combined_bigwigs[3], loci = "../peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p1 <- plot_bw_loci_scatter(combined_bigwigs[1],combined_bigwigs[2], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p2 <- plot_bw_loci_scatter(combined_bigwigs[2],combined_bigwigs[3], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
+p3 <- plot_bw_loci_scatter(combined_bigwigs[1],combined_bigwigs[3], loci = "../data/peaks/G4 CTCF_with_promoters_sorted.bed", verbose = F)
 ggarrange(p1,p2,p3, ncol=3)
 ```
 
@@ -788,10 +788,19 @@ top25.pds.CTCF_only <- makeGRangesFromDataFrame(results[(results$pds.quantile==4
 ```
 
 ```{r}
+top25.pdc <- makeGRangesFromDataFrame(results[results$pdc.quantile==4,1:3],na.rm=T)
+bot75.pdc <- makeGRangesFromDataFrame(results[results$pdc.quantile!=4,1:3],na.rm=T)
+top25.pdc.CTCF_G4 <- makeGRangesFromDataFrame(results[(results$pdc.quantile==4 & results$class == "CTCF_and_G4"),1:3],na.rm=T)
+top25.pdc.CTCF_only <- makeGRangesFromDataFrame(results[(results$pdc.quantile==4  &  results$class == "CTCF_not_G4"),1:3],na.rm=T)
+
+```
+
+
+```{r}
 vl <- list(
   CTCF_G4 = top25.pds.CTCF_G4,
   CTCF_only = top25.pds.CTCF_only,
-  G4motif = rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")
+  G4motif = rtracklayer::import("../data/peaks/mm10_canonical_G4_PQS-regex.bed")
 )
 bedscout::plot_euler(grlist = vl,names = c("CTCF_G4","CTCF_only","G4motif"))
 ```
@@ -894,26 +903,26 @@ ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PhenDC3quantile_byG4.pdf"
 ```{r fig.width=8, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
 p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
-p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[1:2], loci = "../data/peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
 ggarrange(p1,p2,p3, ncol=3)
 ```
 ```{r fig.width=8, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = top25.pds.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
 p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = top25.pds.CTCF_only, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
-p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[2], bg_bwfiles = geo_CnR_bigwigs[1], norm_mode = "log2fc", loci = "../data/peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
 ggarrange(p1,p2,p3, ncol=3)
 ```
 
 ```{r fig.width=8, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
 p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
-p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[3:4], loci = "../data/peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal,show_error = T) + coord_cartesian(ylim=c(0,15))
 ggarrange(p1,p2,p3, ncol=3)
 ```
 ```{r fig.width=8, fig.height=3}
 p1 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = top25.pdc.CTCF_G4, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
 p2 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = top25.pdc.CTCF_only, mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
-p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = "../peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
+p3 <- plot_bw_profile(bwfiles = geo_CnR_bigwigs[4], bg_bwfiles = geo_CnR_bigwigs[3], norm_mode = "log2fc", loci = "../data/peaks/Control_peaks_shuffled.bed", mode = "center",verbose = F, colors = mypal[2],show_error = T) + coord_cartesian(ylim=c(-2,2))
 ggarrange(p1,p2,p3, ncol=3)
 ```
 
@@ -921,7 +930,7 @@ ggarrange(p1,p2,p3, ncol=3)
 df1 <-  data.frame(set="top25_CTCF_G4", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=top25.pds.CTCF_G4, labels=c("Mock","PDS")))[,6:7])
 df2 <- data.frame(set="top25_CTCF_only", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=top25.pds.CTCF_only, labels=c("Mock","PDS")))[,6:7])
 df3 <- data.frame(set="bottom75", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2],loci=bot75.pds, labels=c("Mock","PDS")))[,6:7])
-df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2], loci="../peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDS")))[,6:7])
+df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[1:2], loci="../data/peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDS")))[,6:7])
 df <- rbind(df1,df2,df3,df4)
 df$lfc.pds <- log2(df$PDS/df$Mock)
 df$diff.pds <- df$PDS - df$Mock
@@ -941,7 +950,7 @@ ggviolin(mdf[mdf$variable %in% "diff.pds",], "set","value",fill="variable",palet
 df1 <-  data.frame(set="top25_CTCF_G4", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=top25.pdc.CTCF_G4, labels=c("Mock","PDC")))[,6:7])
 df2 <- data.frame(set="top25_CTCF_only", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=top25.pdc.CTCF_only, labels=c("Mock","PDC")))[,6:7])
 df3 <- data.frame(set="bottom75", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4],loci=bot75.pdc, labels=c("Mock","PDC")))[,6:7])
-df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4], loci="../peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDC")))[,6:7])
+df4 <- data.frame(set="Random", as.data.frame(bw_loci(bwfiles = geo_CnR_bigwigs[3:4], loci="../data/peaks/Control_peaks_shuffled.bed", labels=c("Mock","PDC")))[,6:7])
 df <- rbind(df1,df2,df3,df4)
 df$lfc.pdc <- log2(df$PDC/df$Mock)
 df$diff.pdc <- df$PDC - df$Mock
@@ -974,7 +983,7 @@ p2 <- plot_bw_profile(bwfiles = G4_bigwigs, loci = top25.pdc.CTCF_only, mode = "
 ggarrange(p1,p2, ncol=2)
 ```
 
-```{r fig.width=3, fig.height=3}
+```{r PDS lower quantile, fig.height=3, fig.width=3}
 ord.top25 <- order(rowMeans(as.data.frame(bw_heatmap(bwfiles = geo_bigwigs[1],loci = top25.pds, mode = "center"))))
 p1 <- plot_bw_heatmap(bwfiles = geo_bigwigs[1],loci = top25.pds, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 50, order_by = ord.top25)
 p2 <- plot_bw_heatmap(bwfiles = geo_bigwigs[2],loci = top25.pds, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 50, order_by = ord.top25)
@@ -982,8 +991,18 @@ ggarrange(p1,p2, ncol=2, common.legend = T)
 ggsave(glue("{plot_folder}Heatmap_CTCF_top25_PDSquantile.pdf"),
        plot = last_plot())
 ```
+```{r PhenDC lower quantile, fig.height=3, fig.width=3}
 
-```{r fig.width=3, fig.height=4}
+ord.top25 <- order(rowMeans(as.data.frame(bw_heatmap(bwfiles = geo_bigwigs[3],loci = top25.pdc, mode = "center"))))
+p1 <- plot_bw_heatmap(bwfiles = geo_bigwigs[1],loci = top25.pdc, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 50, order_by = ord.top25)
+p2 <- plot_bw_heatmap(bwfiles = geo_bigwigs[3],loci = top25.pdc, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 50, order_by = ord.top25)
+ggarrange(p1,p2, ncol=2, common.legend = T)
+ggsave(glue("{plot_folder}Heatmap_CTCF_top25_PhenDC3quantile.pdf"),
+       plot = last_plot())
+
+```
+
+```{r PDS upper quantile, fig.height=4, fig.width=3}
 ord.bot75 <- order(rowMeans(as.data.frame(bw_heatmap(bwfiles = geo_bigwigs[1],loci = bot75.pds, mode = "center"))))
 p1 <- plot_bw_heatmap(bwfiles = geo_bigwigs[1],loci = bot75.pds, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 200, order_by = ord.bot75)
 p2 <- plot_bw_heatmap(bwfiles = geo_bigwigs[2],loci = bot75.pds, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 200, order_by = ord.bot75)
@@ -991,11 +1010,27 @@ ggarrange(p1,p2, ncol=2, common.legend = T)
 ggsave(glue("{plot_folder}Heatmap_CTCF_bot75_PDSquantile.pdf"),
        plot = last_plot())
 ```
+```{r PhenDC3 upper quantile, fig.height=4, fig.width=3}
+ord.bot75 <- order(rowMeans(as.data.frame(bw_heatmap(bwfiles = geo_bigwigs[1],loci = bot75.pdc, mode = "center"))))
+p1 <- plot_bw_heatmap(bwfiles = geo_bigwigs[1],loci = bot75.pdc, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 200, order_by = ord.bot75)
+p2 <- plot_bw_heatmap(bwfiles = geo_bigwigs[3],loci = bot75.pdc, mode = "center",verbose = F, zmax = 10, max_rows_allowed = 200, order_by = ord.bot75)
+ggarrange(p1,p2, ncol=2, common.legend = T)
+ggsave(glue("{plot_folder}Heatmap_CTCF_bot75_PhenDC3quantile.pdf"),
+       plot = last_plot())
+
+```
 
 ```{r fig.width=3, fig.height=3}
-G4_CnR <- bw_loci(c("../mendeley/FigureS2/GSM6634325_E14_Mock_G4.bw","../mendeley/FigureS2/GSM6634326_E14_PDS_G4.bw"),loci = makeGRangesFromDataFrame(results,na.rm=T),labels = c("Mock","PDS"))
-results$G4_CnR_delta <- G4_CnR$PDS-G4_CnR$Mock
-results$G4_CnR_lfc <- log2(G4_CnR$PDS/G4_CnR$Mock)
+G4_CnR <- bw_loci(
+  c(
+    "../data/mendeley/FigureS2/G4_CUT-Run_Mock-PDS_CPM_Wulfridge.bw",
+    "../data/mendeley/FigureS2/G4_CUT-Run_PDS_CPM_Wulfridge.bw"
+  ),
+  loci = makeGRangesFromDataFrame(results, na.rm = T),
+  labels = c("Mock", "PDS")
+)
+results$G4_CnR_delta <- G4_CnR$PDS - G4_CnR$Mock
+results$G4_CnR_lfc <- log2(G4_CnR$PDS / G4_CnR$Mock)
 results$G4_CnR_mock <- G4_CnR$Mock
 ```
 
@@ -1037,15 +1072,15 @@ compare_means(G4_CnR_delta ~ pds.quartile.top25, results)
 
 
 ```{r}
-export.bed(top25.pds,"../peaks/CTCF_peaks_top25_pds_up.bed")
-export.bed(bot75.pds,"../peaks/CTCF_peaks_bot75_pds_up.bed")
+export.bed(top25.pds,"../data/peaks/CTCF_peaks_top25_pds_up.bed")
+export.bed(bot75.pds,"../data/peaks/CTCF_peaks_bot75_pds_up.bed")
 ```
 
 
 ### Analysis by G4 motif
 
 ```{r fig.width=6, fig.height=3}
-tr.G4 <- rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")  
+tr.G4 <- rtracklayer::import("../data/peaks/mm10_canonical_G4_PQS-regex.bed")  
 tr.G4$name <- "G4"
 top25.pds.G4anno <- bedscout::annotate_nearby_features(top25.pds,tr.G4,name_field = "name", distance_cutoff = 1000)
 top25.pds.G4_1kb <- top25.pds.G4anno[!is.na(top25.pds.G4anno$nearby_features),]              
@@ -1089,7 +1124,7 @@ ggsave(glue("{plot_folder}Profile_CTCFfoldchange_top25_PhenDC3quantile_byG4motif
        plot = last_plot())
 ```
 ```{r fig.width=6, fig.height=3}
-tr.G4 <- rtracklayer::import("../peaks/mm10_canonical_G4_PQS-regex.bed")  
+tr.G4 <- rtracklayer::import("../data/peaks/mm10_canonical_G4_PQS-regex.bed")  
 tr.G4$name <- "G4"
 top25.pdc.G4anno <- bedscout::annotate_nearby_features(top25.pdc,tr.G4,name_field = "name", distance_cutoff = 1000)
 top25.pdc.G4_1kb <- top25.pdc.G4anno[!is.na(top25.pdc.G4anno$nearby_features),]              
@@ -1301,9 +1336,9 @@ gghistogram(results, "width", add = "median", fill = "class")
 ### Distance-based analysis
 
 ```{r}
-G4_bed <- import('../data/G4_CnT/G4_WT_peaks.narrowPeak')
-ATAC_bed <- import('../data/ATAC-seq/ATAC_seq_mESC_Martire_peaks.narrowPeak')
-pro_bed <- import('../data/regions/promoters_geneSymbol.mm10.bed')
+G4_bed <- import('../data/peaks/G4_WT_peaks.narrowPeak')
+ATAC_bed <- import('../data/peaks/ATAC_seq_mESC_Martire_peaks.narrowPeak')
+pro_bed <- import('../data/peaks/regions/promoters_geneSymbol.mm10.bed')
 
 G4_bed <- bedscout::annotate_overlapping_features(G4_bed, pro_bed, name_field = "name")
 
@@ -1516,11 +1551,11 @@ compare_means(deseq.lfc.pdc ~ nearest_G4, results[results$nearest_G4_type ==
 ```{r}
 #results <- read.table(glue("{result_folder}foldchange_results.txt"))
 results$class <- factor(results$class, levels = c("CTCF_and_G4", "CTCF_not_G4"))
-G4_bed <- import('../data/G4_CnT/G4_WT_peaks.narrowPeak')
+G4_bed <- import('../data/peaks/G4_WT_peaks.narrowPeak')
 G4_bed$name <- "peak"
-G4pred_bed <- import('../data/predG4/mm10_canonical_G4_PQS-regex.bed')
-ATAC_bed <- import('../data/ATAC-seq/ATAC_seq_mESC_Martire_peaks.narrowPeak')
-pro_bed <- import('../data/regions/promoters_geneSymbol.mm10.bed')
+G4pred_bed <- import('../data/peaks/mm10_canonical_G4_PQS-regex.bed')
+ATAC_bed <- import('../data/peaks/ATAC_seq_mESC_Martire_peaks.narrowPeak')
+pro_bed <- import('../data/peaks/regions/promoters_geneSymbol.mm10.bed')
 
 G4pred_bed <- bedscout::annotate_overlapping_features(G4pred_bed, G4_bed, name_field = "name")
 

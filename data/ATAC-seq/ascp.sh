@@ -1,1 +1,0 @@
-ascp -QT -l 300m -P33001 -i $HOME/.aspera/connect/etc/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq/SRR717/002/SRR7172402/SRR7172402_1.fastq.gz . && mv SRR7172402_1.fastq.gz SRR7172402_GSM3143855_ESC_H33WT_ATAC_ctl_for_H3.3_KO_Mus_musculus_ATAC-seq_1.fastq.gz
