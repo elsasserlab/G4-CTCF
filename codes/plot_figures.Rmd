@@ -1146,7 +1146,22 @@ export.bed(bot75.pds,"../data/peaks/CTCF_peaks_bot75_pds_up.bed")
 ### Analysis by G4 motif
 
 ```{r fig.width=6, fig.height=3}
-tr.G4 <- rtracklayer::import("../data/peaks/mm10_canonical_G4_PQS-regex.bed")  
+library(bedscout)
+library(ggplot2)
+rx.G4 <- rtracklayer::import("../data/peaks/mm10_canonical_G4_PQS-regex.bed")  
+tr.G4 <- rtracklayer::import("../data/peaks/G4H_mm10_1.75.bed")  
+G4_bed <- rtracklayer::import('../data/peaks/G4_WT_peaks.narrowPeak')
+bedscout::plot_euler(list(rx.G4,tr.G4),names=c("Regex","G4Hunter"))
+ggsave(glue("{plot_folder}Venn_Regex_G4Hunter.pdf"),
+       plot = last_plot())
+```
+```{r fig.width=6, fig.height=3}
+bedscout::plot_euler(list(rx.G4,tr.G4,G4_bed),names=c("Regex","G4Hunter","G4"))
+ggsave(glue("{plot_folder}Venn_Regex_G4Hunter_G4CnT.pdf"),
+       plot = last_plot())
+```
+
+```{r}
 tr.G4$name <- "G4"
 top25.pds.G4anno <- bedscout::annotate_nearby_features(top25.pds,tr.G4,name_field = "name", distance_cutoff = 1000)
 top25.pds.G4_1kb <- top25.pds.G4anno[!is.na(top25.pds.G4anno$nearby_features),]              
