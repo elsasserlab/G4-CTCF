@@ -1,4 +1,8 @@
-# mESC CTCF - G4 study (article title is here)
+# No evidence that G-quadruplexes promote proximal CTCF binding in vivo
+
+## Figures
+
+Running _plot_figures_ script of the _codes_ directory generates all the figures related to the analysis
 
 ## Snakemake workflow for CTCF and G4 Cut&Tag/ChIP-Seq analysis
 
