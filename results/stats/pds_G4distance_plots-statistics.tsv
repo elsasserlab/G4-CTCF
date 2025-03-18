@@ -1,16 +1,16 @@
 .y.	group1	group2	p	p.adj	p.format	p.signif	method
-deseq.lfc.pds	<1kb	<2.5kb	0.7791980743720363	1	0.77920	ns	Wilcoxon
-deseq.lfc.pds	<1kb	<5kb	0.7714229736713496	1	0.77142	ns	Wilcoxon
-deseq.lfc.pds	<1kb	<10kb	0.39741920328396274	1	0.39742	ns	Wilcoxon
-deseq.lfc.pds	<1kb	<50kb	2.0812101994970956e-10	2.1e-9	2.1e-10	****	Wilcoxon
-deseq.lfc.pds	<1kb	>50kb	1.89516098008748e-27	2.8e-26	< 2e-16	****	Wilcoxon
-deseq.lfc.pds	<2.5kb	<5kb	0.9968232594822733	1	0.99682	ns	Wilcoxon
-deseq.lfc.pds	<2.5kb	<10kb	0.7243565900738682	1	0.72436	ns	Wilcoxon
-deseq.lfc.pds	<2.5kb	<50kb	1.2631376717357675e-4	8.8e-4	0.00013	***	Wilcoxon
-deseq.lfc.pds	<2.5kb	>50kb	7.210550283810219e-12	7.9e-11	7.2e-12	****	Wilcoxon
-deseq.lfc.pds	<5kb	<10kb	0.6634500417133746	1	0.66345	ns	Wilcoxon
-deseq.lfc.pds	<5kb	<50kb	1.048555402350727e-6	8.4e-6	1.0e-06	****	Wilcoxon
-deseq.lfc.pds	<5kb	>50kb	7.161444268331371e-18	9.3e-17	< 2e-16	****	Wilcoxon
-deseq.lfc.pds	<10kb	<50kb	2.77164681379216e-8	2.5e-7	2.8e-08	****	Wilcoxon
-deseq.lfc.pds	<10kb	>50kb	3.4689783009160304e-25	4.899999999999999e-24	< 2e-16	****	Wilcoxon
-deseq.lfc.pds	<50kb	>50kb	1.1409930828671367e-16	1.4e-15	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<1kb	<2.5kb	0.5716796612585084	1	0.57168	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<5kb	0.548498851999869	1	0.54850	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<10kb	0.23795129091036799	1	0.23795	ns	Wilcoxon
+deseq.lfc.pds	<1kb	<50kb	1.3015378009975126e-11	1.3e-10	1.3e-11	****	Wilcoxon
+deseq.lfc.pds	<1kb	>50kb	2.4269404362734122e-29	3.6000000000000003e-28	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<2.5kb	<5kb	0.9810598534710111	1	0.98106	ns	Wilcoxon
+deseq.lfc.pds	<2.5kb	<10kb	0.7505205206933997	1	0.75052	ns	Wilcoxon
+deseq.lfc.pds	<2.5kb	<50kb	1.4149181706308206e-4	9.9e-4	0.00014	***	Wilcoxon
+deseq.lfc.pds	<2.5kb	>50kb	8.68262793070644e-12	9.6e-11	8.7e-12	****	Wilcoxon
+deseq.lfc.pds	<5kb	<10kb	0.6747310797441317	1	0.67473	ns	Wilcoxon
+deseq.lfc.pds	<5kb	<50kb	1.0612879590695924e-6	8.5e-6	1.1e-06	****	Wilcoxon
+deseq.lfc.pds	<5kb	>50kb	7.17634054397173e-18	9.3e-17	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<10kb	<50kb	2.455489463545807e-8	2.2e-7	2.5e-08	****	Wilcoxon
+deseq.lfc.pds	<10kb	>50kb	2.679060087754582e-25	3.7999999999999995e-24	< 2e-16	****	Wilcoxon
+deseq.lfc.pds	<50kb	>50kb	1.0880899178642044e-16	1.3e-15	< 2e-16	****	Wilcoxon

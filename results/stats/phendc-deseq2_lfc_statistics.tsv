@@ -1,2 +1,2 @@
 .y.	group1	group2	p	p.adj	p.format	p.signif	method
-deseq.lfc.pdc	CTCF_and_G4	CTCF_not_G4	7.287431179882695e-59	7.3e-59	<2e-16	****	Wilcoxon
+deseq.lfc.pdc	CTCF_and_G4	CTCF_not_G4	2.0647448505751788e-73	2.0999999999999995e-73	<2e-16	****	Wilcoxon

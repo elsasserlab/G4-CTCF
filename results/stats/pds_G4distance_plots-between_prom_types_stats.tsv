@@ -1,7 +1,7 @@
 nearest_G4	.y.	group1	group2	p	p.adj	p.format	p.signif	method
-<1kb	deseq.lfc.pds	Pro	noPro	1.7412308949023593e-12	8.7e-12	1.7e-12	****	Wilcoxon
-<10kb	deseq.lfc.pds	Pro	noPro	0.26286662454137594	0.53	0.2629	ns	Wilcoxon
-<2.5kb	deseq.lfc.pds	Pro	noPro	8.024740486312189e-6	3.2e-5	8.0e-06	****	Wilcoxon
-<5kb	deseq.lfc.pds	Pro	noPro	0.003246592494937742	0.0097	0.0032	**	Wilcoxon
-0kb	deseq.lfc.pds	Pro	noPro	3.987387432520361e-15	2.4e-14	4.0e-15	****	Wilcoxon
->10kb	deseq.lfc.pds	Pro	noPro	0.2812571043270321	0.53	0.2813	ns	Wilcoxon
+<1kb	deseq.lfc.pds	Pro	noPro	1.3353429428130245e-18	8e-18	< 2e-16	****	Wilcoxon
+<2.5kb	deseq.lfc.pds	Pro	noPro	1.4898265656446206e-4	6e-4	0.00015	***	Wilcoxon
+<5kb	deseq.lfc.pds	Pro	noPro	0.9700891455516155	1	0.97009	ns	Wilcoxon
+<10kb	deseq.lfc.pds	Pro	noPro	0.6532162816820697	1	0.65322	ns	Wilcoxon
+0kb	deseq.lfc.pds	Pro	noPro	6.664278162600988e-16	3.3e-15	6.7e-16	****	Wilcoxon
+>10kb	deseq.lfc.pds	Pro	noPro	0.3680021798221318	1	0.36800	ns	Wilcoxon

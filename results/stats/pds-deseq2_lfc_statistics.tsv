@@ -1,2 +1,2 @@
 .y.	group1	group2	p	p.adj	p.format	p.signif	method
-deseq.lfc.pds	CTCF_and_G4	CTCF_not_G4	0.006311991191593718	0.0063	0.0063	**	Wilcoxon
+deseq.lfc.pds	CTCF_and_G4	CTCF_not_G4	9.726533986883777e-4	9.7e-4	0.00097	***	Wilcoxon
